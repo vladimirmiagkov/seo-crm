@@ -1,0 +1,30 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <div id="wrapper">
+        <div id="container">
+            {% if rscontent is defined %}
+                {{ rscontent | raw }}
+            {% endif %}
+
+            {% if rscontent2 is defined %}
+                {{ rscontent2 }}
+            {% endif %}
+
+            {% if form is defined %}
+                {{ form_start(form) }}
+                {{ form_widget(form) }}
+                {{ form_end(form) }}
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block stylesheets %}
+    <style>
+        body {
+            background: #F5F5F5;
+            font: 12px/1.0 sans-serif;
+        }
+    </style>
+{% endblock %}

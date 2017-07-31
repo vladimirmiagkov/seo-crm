@@ -1,0 +1,13 @@
+#formatter.name: pretty
+
+#code_coverage:
+#    whitelist:
+#      - "src/AppBundle/"
+#    output:
+#      html: ./testreports/coverage
+
+#extensions:
+#    SomeExtension:
+#        some_config: foo
+#
+#    SomeOtherExtension: ~

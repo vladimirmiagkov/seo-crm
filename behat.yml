@@ -1,0 +1,23 @@
+default:
+    autoload:
+        - '%paths.base%/src/AppBundle/Features/bootstrap/'
+
+    extensions:
+        Behat\Symfony2Extension:
+            kernel:
+                env: "test"
+                debug: "true"
+
+    suites:
+        default:
+            type: symfony_bundle
+            bundle: AppBundle
+            contexts:
+                #- FeatureContext #:
+                    #simpleArg: 'string'
+                    #session:   '@session' # public function __construct(Session $session, $simpleArg)
+                    #doctrine: '@doctrine'
+                - ApiFeatureContext:
+                    kernel: '@kernel'
+                    parameters:
+                        base_uri: 'http://rssp6.ru/app_test.php/'

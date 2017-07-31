@@ -1,0 +1,32 @@
+services:
+    # TODO: refactor to symfony 3.3
+    rs.page_analyzer:
+        class: SiteAnalyzerBundle\Page\PageAnalyzer
+
+    rs.page_downloader:
+        class: SiteAnalyzerBundle\Site\PageDownloader
+        arguments:
+            $remoteBrowser: "@remote_browser"
+            $pageAnalyzer: "@rs.page_analyzer"
+            $redis: "@snc_redis.default"
+
+    rs.site_analyzer_elastic_search:
+        class: SiteAnalyzerBundle\Site\ElasticSearch
+        arguments:
+            $elasticSearchService: "@app.elastic_search"
+
+    rs.site_downloader:
+        class: SiteAnalyzerBundle\Site\SiteDownloader
+        arguments:
+            $validator: "@validator"
+            $redis: "@snc_redis.default"
+            $elasticSearch: "@rs.site_analyzer_elastic_search"
+            $remoteBrowser: "@remote_browser"
+            $pageDownloader: "@rs.page_downloader"
+
+    rs.site_analyzer:
+        class: SiteAnalyzerBundle\Site\SiteAnalyzer
+        arguments:
+            $validator: "@validator"
+            $redis: "@snc_redis.default"
+            $elasticSearch: "@rs.site_analyzer_elastic_search"

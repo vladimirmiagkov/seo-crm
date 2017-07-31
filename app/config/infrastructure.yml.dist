@@ -1,0 +1,32 @@
+parameters:
+    #remote_browser_host: 'http://192.168.99.100:32768/wd/hub' # selenium remote browser
+    remote_browser_host: 'http://192.168.99.100:8910' # phantomjs remote browser
+    elastic_search_hosts:
+        0:
+            host: '192.168.99.100'
+            port: '9200'
+
+#https://github.com/snc/SncRedisBundle/blob/master/Resources/doc/index.md
+snc_redis:
+    # configure predis as client
+    clients:
+        default:
+            type: predis
+            alias: default
+            dsn: redis://localhost
+        doctrine:
+            type: predis
+            alias: doctrine
+            dsn: redis://localhost
+    # configure doctrine caching
+#    doctrine:
+#        metadata_cache:
+#            client: doctrine
+#            entity_manager: default
+#            document_manager: default
+#        result_cache:
+#            client: doctrine
+#            entity_manager: [default]
+#        query_cache:
+#            client: doctrine
+#            entity_manager: default
