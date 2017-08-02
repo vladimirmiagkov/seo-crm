@@ -56,19 +56,19 @@ class KeywordRepository extends EntityRepository
         return $result;
     }
 
-    /**
-     * @param int $keywordId
-     * @return Keyword
-     * @throws \Exception
-     */
-    public function getById(int $keywordId)
-    {
-        /** @var Keyword $result */
-        $result = $this->find($keywordId);
-        if (!$result) {
-            throw new \Exception('Cant find keyword by id="' . $keywordId . '"');
-        }
-
-        return $result;
-    }
+    ///**
+    // * @param int $keywordId
+    // * @return Keyword
+    // * @throws \Exception
+    // */
+    //public function getById(int $keywordId)
+    //{
+    //    /** @var Keyword $result */
+    //    $result = $this->find($keywordId);
+    //    if (!$result) {
+    //        throw new \Exception('Cant find keyword by id="' . $keywordId . '"');
+    //    }
+    //
+    //    return $result;
+    //}
 }

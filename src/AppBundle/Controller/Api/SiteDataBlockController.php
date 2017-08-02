@@ -28,15 +28,12 @@ class SiteDataBlockController extends Controller
 
         $data = ['result' => $siteDataBlockService->getDataBlock(
             $site,
-            $this->getUser(),
             $request->query->get('limit'),
             $request->query->get('offset'),
             $request->query->get('datefrom'),
             $request->query->get('dateto'),
             \json_decode(\urldecode($request->query->get('filter')), true)
         )];
-        //$result = $this->get('jms_serializer')->serialize($data, 'json', SerializationContext::create()->setGroups(['datablock'])->setSerializeNull(true)->enableMaxDepthChecks());
-        //$result = $this->get('jms_serializer')->serialize($data, 'json');
         $result = \json_encode($data);
 
         return new Response($result);

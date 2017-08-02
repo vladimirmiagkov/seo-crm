@@ -38,6 +38,7 @@ class SiteAnalyzer
 
     /**
      * Analyze whole site.
+     * TODO
      *
      * @param SiteDownloadOptionsDTO $options
      * @return bool

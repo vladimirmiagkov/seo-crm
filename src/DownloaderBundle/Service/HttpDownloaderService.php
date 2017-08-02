@@ -7,10 +7,13 @@ use GuzzleHttp\Psr7;
 use GuzzleHttp\Client as GuzzleHttpClient;
 
 /**
- * Wrapper for Guzzle, with custom config.
+ * Just a wrapper for Guzzle, with custom config.
  */
 class HttpDownloaderService implements DownloaderInterface
 {
+    /**
+     * Max allowed http redirects when download resource.
+     */
     const MAXIMUM_ALLOWED_REDIRECTS = 10;
 
     /** @var array */

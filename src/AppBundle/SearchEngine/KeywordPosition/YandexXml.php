@@ -43,14 +43,14 @@ class YandexXml
      * @param string $goalSiteDomain         Like "https://www.example.com"
      * @param string $fromPlace              Region (or city) from which to search.
      *                                       http://search.yaca.yandex.ru/geo.c2n //&lr=47
-     * @param int    $maxRequestSites        Maximum search sites from the search engine.
+     * @param int    $maxRequestSites        Maximum (total) search sites from the search engine.
      * @param int    $requestSitesPerPage    Instruction for search engine. How many sites per page we requesting.
      * @param int    $timeoutBetweenRequests Timeout between requesting page from search engine.
      *                                       WARNING: If no timeout - search engine may disconnect with error: 503
      *                                       (bruteforce).
      * @param int    $startFromPage          From which page we need to start requesting search engine.
      *                                       This optimization is done to reduce the number of requests to search
-     *                                       engine.
+     *                                       engine. We can assume this number from the last keyword position.
      *
      * @return SerpResult
      */
@@ -159,6 +159,8 @@ class YandexXml
             } elseif ($startFromPage > 0) {
                 // If a request was made to grab sites from a particular page (for example 3),
                 //   and there no our goal site, then we start to search again, but from the 0 page.
+                // TODO: investigate situation.
+                // TODO: do not request already requested pages from search engine. 
                 $serpResult = $this->grabSerp(
                     $keyword,
                     $goalSiteDomain,

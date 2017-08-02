@@ -18,6 +18,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * Site.
+ * Internet site. Like "https://www.example.com"
  *
  * @ORM\Table(name="site")
  * @ORM\Entity(repositoryClass="AppBundle\Repository\SiteRepository")
@@ -34,11 +35,17 @@ class Site
     use CreatedAtTrait;
     use ModifiedAtTrait;
 
+    /**
+     * Our local seo strategy.
+     * "keywords" linked to "pages", or "pages" linked to "keywords".
+     * It's all about how you promote your site.
+     * Seo business logic.
+     */
     const SEO_STRATEGY_KEYWORDS_LINKED_TO_PAGES = 0;
     const SEO_STRATEGY_PAGES_LINKED_TO_KEYWORD = 1;
 
     /**
-     * Site URI in puny representation. Example: http://www.xn----123.xn--123
+     * Site URL name in "puny" representation. Example: http://www.xn----123.xn--123
      *
      * @var string
      *
@@ -49,7 +56,7 @@ class Site
     protected $namePuny;
 
     /**
-     * Strategy for seo linking: keywords against pages.
+     * Strategy for seo linking: "keywords" linked to "pages", or "pages" linked to "keywords"..
      * Seo business logic.
      *
      * @var int
@@ -59,13 +66,6 @@ class Site
      * @Assert\NotBlank()
      */
     protected $seoStrategyKeywordPage = self::SEO_STRATEGY_KEYWORDS_LINKED_TO_PAGES;
-
-
-    public function __construct()
-    {
-
-    }
-
 
     /**
      * @param string $name
@@ -105,9 +105,9 @@ class Site
             && $seoStrategyKeywordPage !== self::SEO_STRATEGY_PAGES_LINKED_TO_KEYWORD
         ) {
             throw new \InvalidArgumentException('Unavailable $seoStrategyKeywordPage.');
-        } else {
-            $this->seoStrategyKeywordPage = $seoStrategyKeywordPage;
         }
+
+        $this->seoStrategyKeywordPage = $seoStrategyKeywordPage;
 
         return $this;
     }

@@ -30,16 +30,16 @@ class CronController extends Controller
         // */20 * * * * /usr/local/bin/php /home/path/to/public_html/app/stats/index.php update key=1234
         // var_dump($argv);
 
-        // Check cron secure key. Protect against DDOS.
+        // Check cron secure key. Protect against DDOS. // Do we need this?
         if ($this->container->getParameter('rs_cron_security_key') != $request->query->get('key')) {
             throw new \InvalidArgumentException('Bad secure key provided.');
         }
 
-        // TODO: Make full log for cron jobs.
+        // TODO: Make full log for cron jobs, for visualising problems...
 
         $result = [];
         // Check keywords positions in search engines.
-        $resultFromSearchEngine = $keywordPositionService->grabKeywordPositionFromSearchEngines();
+        $resultFromSearchEngine = $keywordPositionService->grabKeywordPositionFromSearchEngines(false);
         if ($resultFromSearchEngine['keyword']) {
             $result[] = 'Check keyword:';
             $result[] = '&nbsp;&nbsp;' . 'site name = ' . $resultFromSearchEngine['keyword']->getSite()->getName();

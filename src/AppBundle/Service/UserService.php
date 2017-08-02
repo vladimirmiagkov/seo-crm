@@ -24,24 +24,14 @@ class UserService
      */
     protected $em;
     /**
-     * @var RsAcl
-     */
-    protected $acl;
-    /**
      * @var UserRepository
      */
     protected $userRepository;
 
-
-    public function __construct(
-        ValidatorInterface $validator,
-        EntityManager $em,
-        RsAcl $acl
-    )
+    public function __construct(ValidatorInterface $validator, EntityManager $em)
     {
         $this->validator = $validator;
         $this->em = $em;
-        $this->acl = $acl;
 
         $this->userRepository = $this->em->getRepository('AppBundle:User');
     }
@@ -168,6 +158,7 @@ class UserService
     }
 
     /**
+     * Evaluate role.
      * Check: Can $creator set a $role to another user?
      * Return: maximum available role for "set role to another user".
      *
@@ -185,7 +176,9 @@ class UserService
             // BUSINESS LOGIC: Only ROLE_SUPER_ADMIN users can set role "ROLE_SUPER_ADMIN" to other users!
             //                 ROLE_ADMIN users CANT set role "ROLE_SUPER_ADMIN" to other users!
             if ($role === USER::ROLE_SUPER_ADMIN && !$creator->hasRole(USER::ROLE_SUPER_ADMIN)) {
-                throw new PreconditionFailedHttpException('Only users with role "' . USER::ROLE_SUPER_ADMIN . '" can set role "' . USER::ROLE_SUPER_ADMIN . '" to other users');
+                throw new PreconditionFailedHttpException(
+                    'Only users with role "' . USER::ROLE_SUPER_ADMIN
+                    . '" can set role "' . USER::ROLE_SUPER_ADMIN . '" to other users');
             }
         } else {
             USER::DEFAULT_LOWEST_ROLE;

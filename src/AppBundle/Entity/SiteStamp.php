@@ -13,8 +13,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 use AppBundle\Entity\SiteSchedule;
 
 /**
- * Site stamp. Crawled copy of site for concrete date.
- * It's like google search engine make full cached version of you site with ALL pages.
+ * Site stamp. Crawled (downloaded) copy of site for concrete date.
+ * It's like google search engine make full cached version of you site with ALL pages and resources.
  *
  * @ORM\Table(name="site_stamp")
  * @ORM\Entity(repositoryClass="AppBundle\Repository\SiteStampRepository")
@@ -44,12 +44,6 @@ class SiteStamp
      * @var string
      */
     protected $archiveInitialScheduleOptions;
-
-
-    public function __construct()
-    {
-
-    }
 
     /**
      * @return SiteSchedule

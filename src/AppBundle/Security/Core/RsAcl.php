@@ -14,25 +14,26 @@ use Doctrine\ORM\EntityManager;
 use AppBundle\Entity\User;
 
 /**
- * Custom ACL
+ * Custom ACL.
+ * Simple bitmask rights for objects.
  */
 class RsAcl
 {
-    const VIEW = 1;           // 1 << 0 //просматривать / да
-    const CREATE = 2;         // 1 << 1 //добавлять(add child)
-    const EDIT_OWN = 4;       // 1 << 2 //ред./уд. свои
-    const EDIT_OTHER = 8;     // 1 << 3 //ред./уд. чужие
+    const VIEW = 1;           // 1 << 0 // i can view object
+    const CREATE = 2;         // 1 << 1 // i can add / add child object
+    const EDIT_OWN = 4;       // 1 << 2 // i can edit "own" object (creator = me)
+    const EDIT_OTHER = 8;     // 1 << 3 // i can edit "other" object (creator != me)
     //const UNDELETE = 16;      // 1 << 4 //
     //const OPERATOR = 32;      // 1 << 5 //
     //const MASTER = 64;        // 1 << 6 //
     //const OWNER = 128;        // 1 << 7 //
 
-    const VIEW_COMMENTS = 256;                 // 1 << 8 //просматривать комментарии(отображать комментарии?)
-    const EDIT_COMMENTS = 512;                 // 1 << 9 //CRUD комментарии(CUD только свои комментарии)(full CRUD for ROLE_ADMIN)
-    const AVAILABLE_SITE_CNT = 1024;           // 1 << 10 //доступен детальный анализ счётч посещ
-    const AVAILABLE_SITE_DETAIL = 2048;        // 1 << 11 //доступен детальный анализ сайта
-    const AVAILABLE_PAGE_DETAIL = 4096;        // 1 << 12 //доступен детальный анализ страницы
-    const AVAILABLE_COMPETITOR_DETAIL = 8192;  // 1 << 13 //доступен детальный анализ конкурентов
+    const VIEW_COMMENTS = 256;                 // 1 << 8  // i can view object comments
+    const EDIT_COMMENTS = 512;                 // 1 << 9  // i can CRUD object comments
+    const AVAILABLE_SITE_CNT = 1024;           // 1 << 10 // i can view site "Counter of visits"
+    const AVAILABLE_SITE_DETAIL = 2048;        // 1 << 11 // i can view "site analyze" page
+    const AVAILABLE_PAGE_DETAIL = 4096;        // 1 << 12 // i can view "page analyze" page
+    const AVAILABLE_COMPETITOR_DETAIL = 8192;  // 1 << 13 // i can view "competitors" page
     //const  = 16384;            // 1 << 14
     //const  = 32768;            // 1 << 15
     //const  = 65536;            // 1 << 16
@@ -78,7 +79,6 @@ class RsAcl
         $this->em = $em;
     }
 
-
     protected function getObjectIdentity($object)
     {
         return ObjectIdentity::fromDomainObject($object);
@@ -99,12 +99,12 @@ class RsAcl
     }
 
     /**
-     * Check access
+     * Check access.
      *
      * @param int   $mask
      * @param mixed $object
      * @param User  $user
-     * @return bool
+     * @return bool true=grant false=deny
      */
     public function isGranted($mask, $object, User $user)
     {
@@ -130,7 +130,7 @@ class RsAcl
     }
 
     /**
-     * Set / update ACL
+     * Set / update ACL.
      *
      * @param int   $mask
      * @param mixed $object

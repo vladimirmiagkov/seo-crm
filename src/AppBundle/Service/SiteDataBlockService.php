@@ -8,10 +8,6 @@ use AppBundle\Entity\User;
 use AppBundle\Entity\Page;
 use AppBundle\Entity\Keyword;
 use AppBundle\Repository\KeywordPositionRepository;
-use AppBundle\Repository\KeywordRepository;
-use AppBundle\Repository\PageRepository;
-use AppBundle\Repository\SiteRepository;
-use AppBundle\Security\Core\RsAcl;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
@@ -36,22 +32,6 @@ class SiteDataBlockService
      */
     protected $em;
     /**
-     * @var RsAcl
-     */
-    protected $acl;
-    /**
-     * @var SiteRepository
-     */
-    protected $siteRepository;
-    /**
-     * @var PageRepository
-     */
-    protected $pageRepository;
-    /**
-     * @var KeywordRepository
-     */
-    protected $keywordRepository;
-    /**
      * @var KeywordPositionRepository
      */
     protected $keywordPositionRepository;
@@ -59,17 +39,12 @@ class SiteDataBlockService
 
     public function __construct(
         ValidatorInterface $validator,
-        EntityManager $em,
-        RsAcl $acl
+        EntityManager $em
     )
     {
         $this->validator = $validator;
         $this->em = $em;
-        $this->acl = $acl;
 
-        $this->siteRepository = $em->getRepository('AppBundle:Site');
-        $this->pageRepository = $em->getRepository('AppBundle:Page');
-        $this->keywordRepository = $em->getRepository('AppBundle:Keyword');
         $this->keywordPositionRepository = $em->getRepository('AppBundle:KeywordPosition');
     }
 
@@ -78,7 +53,6 @@ class SiteDataBlockService
      * TODO: Move this method to repository?
      *
      * @param Site     $site     Goal site
-     * @param User     $user     TODO: remove this?
      * @param null|int $limit    Pager limit
      * @param null|int $offset   Pager offset
      * @param string   $dateFrom Limits for data (bigger)
@@ -89,7 +63,6 @@ class SiteDataBlockService
      */
     public function getDataBlock(
         Site $site,
-        User $user,
         $limit = null,
         $offset = null,
         string $dateFrom = '',
@@ -180,7 +153,7 @@ class SiteDataBlockService
                 break;
 
             case Site::SEO_STRATEGY_PAGES_LINKED_TO_KEYWORD:
-                throw new \Exception('Not implemented yet.');
+                throw new \Exception('SEO_STRATEGY_PAGES_LINKED_TO_KEYWORD Not implemented yet.');
                 break;
 
             default:

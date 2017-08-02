@@ -59,7 +59,7 @@ class SiteManager
     }
 
     /**
-     * TODO: Is this working?
+     * TODO: Is this work?
      */
     public function runCron()
     {

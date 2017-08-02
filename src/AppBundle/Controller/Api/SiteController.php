@@ -20,12 +20,15 @@ class SiteController extends Controller
      */
     public function listAction(Request $request, SiteService $siteService)
     {
-        $objs = ['result' => $siteService->getSitesAvailableForUser(
+        $objs = ['result' => $siteService->findSitesAvailableForUser(
             $this->getUser(),
             $request->query->get('start'),
             $request->query->get('limit')
         )];
-        $result = $this->get('jms_serializer')->serialize($objs, 'json', SerializationContext::create()->setGroups(array('list'))->setSerializeNull(true)->enableMaxDepthChecks());
+        $result = $this->get('jms_serializer')->serialize($objs, 'json', SerializationContext::create()
+            ->setGroups(array('list'))
+            ->setSerializeNull(true)
+            ->enableMaxDepthChecks());
 
         return new Response($result);
     }
@@ -41,19 +44,11 @@ class SiteController extends Controller
             json_decode($request->getContent(), true),
             $this->getUser()
         )];
-        $result = $this->get('jms_serializer')->serialize($obj, 'json', SerializationContext::create()->setGroups(array('list'))->setSerializeNull(true)->enableMaxDepthChecks());
+        $result = $this->get('jms_serializer')->serialize($obj, 'json', SerializationContext::create()
+            ->setGroups(array('list'))
+            ->setSerializeNull(true)
+            ->enableMaxDepthChecks());
 
         return new Response($result);
     }
-
-
-    ///**
-    // * @return \AppBundle\Repository\SiteRepository|\Doctrine\Common\Persistence\ObjectRepository
-    // */
-    //protected function getRepository()
-    //{
-    //    $em = $this->getDoctrine()->getManager();
-    //    $repository = $em->getRepository('AppBundle:Site');
-    //    return $repository;
-    //}
 }

@@ -38,7 +38,7 @@ services:
     AppBundle\Security\Core\RsAcl:
         public: true
 
-    AppBundle\EventListener\DoctrineDebugListener: #TODO: disable this on production! or move to ENV
+    AppBundle\EventListener\DoctrineDebugListener: # TODO: disable this on production! or move to ENV
         tags:
             - {name: kernel.event_listener, event: kernel.controller, method: onKernelController}
             - {name: kernel.event_listener, event: kernel.response, method: onKernelResponse}

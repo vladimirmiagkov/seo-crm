@@ -23,7 +23,10 @@ class SiteScheduleController extends Controller
     {
         $repository = $this->getRepository();
         $objects = ['result' => $repository->findAll()];
-        $result = $this->get('jms_serializer')->serialize($objects, 'json', SerializationContext::create()->setGroups(array('list'))->setSerializeNull(true)->enableMaxDepthChecks());
+        $result = $this->get('jms_serializer')->serialize($objects, 'json', SerializationContext::create()
+            ->setGroups(array('list'))
+            ->setSerializeNull(true)
+            ->enableMaxDepthChecks());
 
         return new Response($result);
     }
@@ -40,7 +43,10 @@ class SiteScheduleController extends Controller
             json_decode($request->getContent(), true),
             $this->getUser()
         )];
-        $result = $this->get('jms_serializer')->serialize($obj, 'json', SerializationContext::create()->setGroups(array('list'))->setSerializeNull(true)->enableMaxDepthChecks());
+        $result = $this->get('jms_serializer')->serialize($obj, 'json', SerializationContext::create()
+            ->setGroups(array('list'))
+            ->setSerializeNull(true)
+            ->enableMaxDepthChecks());
 
         return new Response($result);
     }

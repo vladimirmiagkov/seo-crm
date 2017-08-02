@@ -1,7 +1,11 @@
 {
     "name": "rsite/sp6",
-    "license": "proprietary",
     "type": "project",
+    "license": "MIT",
+    "description": "SEO CRM",
+    "keywords": [
+        "seo"
+    ],
     "autoload": {
         "psr-0": {
             "": "src/"
@@ -22,6 +26,12 @@
             "vendor/symfony/symfony/src/Symfony/Component/VarDumper/Resources/functions/dump.php"
         ]
     },
+    "authors": [
+        {
+            "name": "Vladimir Miagkov",
+            "email": "vlad8277@gmail.com"
+        }
+    ],
     "require": {
         "php": ">=7.0",
         "doctrine/doctrine-bundle": "^1.6",

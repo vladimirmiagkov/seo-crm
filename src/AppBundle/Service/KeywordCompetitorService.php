@@ -13,6 +13,7 @@ class KeywordCompetitorService
 {
     /**
      * Maximum number of competitors, that we gonna save to db.
+     * Business logic: we need only some first competitors.
      */
     const COMPETITORS_SAVE_LIMIT_MAX = 30;
 
@@ -44,7 +45,7 @@ class KeywordCompetitorService
 
     /**
      * Add (save) new competitors to db.
-     * WARNING: We add only few competitors from top,
+     * Business logic: We add only few competitors from top,
      *          like from position 1 to position self::COMPETITORS_SAVE_LIMIT_MAX.
      *          This is optimization by db size.
      *

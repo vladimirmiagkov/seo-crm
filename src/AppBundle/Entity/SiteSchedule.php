@@ -17,7 +17,9 @@ use AppBundle\Entity\Site;
 use AppBundle\Entity\SiteStamp;
 
 /**
- * SiteSchedule.
+ * Site schedule.
+ * Schedule for download full copy of site (all pages and resources).
+ * Example: We download full copy of site (for full analyse) once per week.
  *
  * @ORM\Table(name="site_schedule")
  * @ORM\Entity(repositoryClass="AppBundle\Repository\SiteScheduleRepository")
@@ -25,6 +27,9 @@ use AppBundle\Entity\SiteStamp;
  */
 class SiteSchedule
 {
+    /**
+     * String identificators for predefined special values.
+     */
     const USE_DEFAULT = 'use_default';
     const USE_ROBOTSTXT = 'use_robots.txt';
     const DONT_USE_ROBOTSTXT = 'dont_use_robots.txt';
@@ -39,6 +44,7 @@ class SiteSchedule
 
     /**
      * Linked site.
+     * This schedule linked to site.
      *
      * @var Site
      *
@@ -126,12 +132,6 @@ class SiteSchedule
 
     // Specific schedule fields /\ ////////////////////////////////////////////////////////////////////////////////////
 
-
-    public function __construct()
-    {
-
-    }
-
     /**
      * @return Site
      */
@@ -150,14 +150,13 @@ class SiteSchedule
         return $this;
     }
 
-
     /**
      * @return int
      */
     public function getIntervalBetweenSiteDownload(): int
     {
         if ($this->intervalBetweenSiteDownload === self::USE_DEFAULT) {
-            return 3600 * 24 * 7; //TODO
+            return 3600 * 24 * 7; // TODO
         }
 
         return (int)$this->intervalBetweenSiteDownload;
@@ -179,9 +178,9 @@ class SiteSchedule
     public function getIntervalBetweenPageDownload(): int
     {
         if ($this->intervalBetweenPageDownload === self::USE_DEFAULT) {
-            return 2; //TODO
+            return 2; // TODO
         } elseif ($this->intervalBetweenPageDownload === self::USE_ROBOTSTXT) {
-            return 4; //TODO
+            return 4; // TODO
         }
 
         return (int)$this->intervalBetweenPageDownload;
@@ -203,7 +202,7 @@ class SiteSchedule
     public function getMaxTimeLimitForSiteDownload(): int
     {
         if ($this->maxTimeLimitForSiteDownload === self::USE_DEFAULT) {
-            return 3600 * 24 * 7; //TODO
+            return 3600 * 24 * 7; // TODO
         }
 
         return (int)$this->maxTimeLimitForSiteDownload;
@@ -225,7 +224,7 @@ class SiteSchedule
     public function getMaxDepthLevelLimitForSiteDownload(): int
     {
         if ($this->maxDepthLevelLimitForSiteDownload === self::USE_DEFAULT) {
-            return 100; //TODO
+            return 100; // TODO
         }
 
         return (int)$this->maxDepthLevelLimitForSiteDownload;

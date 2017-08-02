@@ -5,14 +5,15 @@
 ## About project
 What is this? (todo: write intro or video)
 
-This is an attempt to completely remake the [old project](http://www.rsite.ru/en/lastprojects/crm-robot-automation-seo-promotion-sites)
+This is an attempt to completely rewrite the [old project](http://www.rsite.ru/en/lastprojects/crm-robot-automation-seo-promotion-sites)
 with separate frontend and backend.<br>
-??Support: horizontal sharding (ElasticSearch).(??some features can break this)<br>
+Prepare for highload.<br>
+??Support: horizontal sharding (ElasticSearch)<br>
 
-Backend part of the project.<br>
+This is Backend part of the project.<br>
 See: Frontend part [no link yet]
 
-Project status: unknown.<br>
+Project status: slow development, at free time.<br>
 Features implemented: 15%
 
 
@@ -30,9 +31,9 @@ Backend:
 * [Symfony 3](https://symfony.com)
 
   tests:
-  * BDD [Behat](http://behat.org) Test Api.
-  * TDD [PhpSpec](http://www.phpspec.net) Unit + functional tests.
-  * [PhpUnit](https://phpunit.de) Most simpliest unit tests. (todo: replace with PhpSpec?)
+  * BDD [Behat](http://behat.org)
+  * TDD [PhpSpec](http://www.phpspec.net)
+  * [PhpUnit](https://phpunit.de)
 
 <br>
 
@@ -40,7 +41,7 @@ Other:
 * Docker: Easy environment.
 * ElasticSearch: Big data. We store downloaded sites data here.
 * Redis: Fast cache. Cross-process synchronization manager.
-* PhantomJS: Remote Javascript browser. We download full copy of sites with Javascript evaluate.
+* PhantomJS: Remote Javascript browser. We download full copy of sites with Javascript support.
 
 
 

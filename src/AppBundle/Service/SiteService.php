@@ -53,7 +53,7 @@ class SiteService
      * @param null|int $limit Pager
      * @return null|array
      */
-    public function getSitesAvailableForUser(User $user, $start = null, $limit = null)
+    public function findSitesAvailableForUser(User $user, $start = null, $limit = null)
     {
         $alias = 'site';
         $qb = $this->em->createQueryBuilder()
@@ -83,6 +83,8 @@ class SiteService
     }
 
     /**
+     * // TODO
+     *
      * @param       $id
      * @param array $objData
      * @param User  $creator
@@ -101,7 +103,7 @@ class SiteService
             throw new SiteNotExistsException();
         }
 
-        //TODO: ACL
+        // TODO: ACL
 
         isset($objData['active']) ? $obj->setActive($objData['active']) : null;
 

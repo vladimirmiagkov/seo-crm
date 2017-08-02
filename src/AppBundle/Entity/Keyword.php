@@ -75,6 +75,7 @@ class Keyword
 
     /**
      * Linked site.
+     * This "keyword" linked to "site".
      *
      * @var Site
      *
@@ -85,7 +86,8 @@ class Keyword
     protected $site;
 
     /**
-     * Linked pages. Doctrine owning side.
+     * Linked "pages".
+     * Doctrine owning side.
      *
      * @var Page|ArrayCollection
      *
@@ -97,7 +99,8 @@ class Keyword
     protected $pages;
 
     /**
-     * Available (processed) search engines for this keyword.
+     * Available (processed) "search engines" for this "keyword".
+     * Like: Check positions in Google, Yandex...
      *
      * @var SearchEngine|ArrayCollection
      *
@@ -105,10 +108,12 @@ class Keyword
      * @Serialization\Groups({"list"})
      * @Serialization\MaxDepth(3) // 3 = pages->keywords->searchengine
      */
-    protected $searchEngine;
+    protected $searchEngines;
 
     /**
-     * From place. Code. Like: "213"
+     * Our system search this keyword "from place".
+     * Like: i search keyword "bestseller" from place "Denver"
+     * Search engine term.
      *
      * @var string
      *
@@ -120,6 +125,7 @@ class Keyword
 
     /**
      * Max position to check, when we request search engine.
+     * This is for limiting max requests.
      *
      * @var integer
      *
@@ -130,7 +136,7 @@ class Keyword
     protected $searchEngineRequestLimit = 100;
 
     /**
-     * Datetime of last check(get position) of the keyword position in SERP.
+     * Datetime of last check (get position) of the keyword position in SERP.
      * We check positions in all searchEngine's at one run.
      *
      * @var \DateTime
@@ -141,8 +147,8 @@ class Keyword
     protected $positionLastCheck;
 
     /**
-     * We 'lock' keyword at starting point of getting positions,
-     * to prevent multiprocess run for same keyword at once.
+     * We 'lock' keyword at starting point of "getting positions" in search engine,
+     * to prevent multiprocess "getting position" for same keyword at once.
      *
      * @var \DateTime
      *
@@ -155,7 +161,7 @@ class Keyword
     public function __construct()
     {
         $this->pages = new ArrayCollection();
-        $this->searchEngine = new ArrayCollection();
+        $this->searchEngines = new ArrayCollection();
     }
 
 
@@ -199,9 +205,9 @@ class Keyword
     /**
      * @return SearchEngine|ArrayCollection
      */
-    public function getSearchEngine()
+    public function getSearchEngines()
     {
-        return $this->searchEngine;
+        return $this->searchEngines;
     }
 
     /**
@@ -210,7 +216,7 @@ class Keyword
      */
     public function addSearchEngine($searchEngine)
     {
-        $this->searchEngine[] = $searchEngine;
+        $this->searchEngines[] = $searchEngine;
         return $this;
     }
 

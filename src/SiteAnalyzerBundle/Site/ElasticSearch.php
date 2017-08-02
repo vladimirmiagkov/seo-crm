@@ -286,32 +286,31 @@ class ElasticSearch
 
     //public function debugShowAllRecords()
     //{
-    //$params = [
-    //    'index' => 'my_index',//db
-    //    'type' => 'my_type',//table
-    //    'id' => 'my_id',
-    //    //'body' => ['testField' => 'abc'],
-    //    //'client' => [ 'ignore' => [400, 404] ],
-    //    //'client' => [
-    //    //    'verbose' => true
-    //    //],
-    //];
-    ////$response = $this->client->index($params);
-    //$response = $this->client->get($params);
-    //echo '<pre>', htmlspecialchars(print_r($response, true)), '</pre>';
-
-    //sleep(3);
-    //$params = [
-    //    'index' => 'site_dwn_' . $siteId,
-    //    'type' => 'page',
-    //    'body' => [
-    //        'query' => [
-    //            'match' => [
-    //                'title' => 'стол'
-    //            ]
-    //        ]
-    //    ]
-    //];
-    //$response = $this->client->search($params);
+    //    $params = [
+    //        'index' => 'my_index',//db
+    //        'type'  => 'my_type',//table
+    //        'id'    => 'my_id',
+    //        //'body' => ['testField' => 'abc'],
+    //        //'client' => [ 'ignore' => [400, 404] ],
+    //        //'client' => [
+    //        //    'verbose' => true
+    //        //],
+    //    ];
+    //    //$response = $this->client->index($params);
+    //    $response = $this->client->get($params);
+    //    echo '<pre>', htmlspecialchars(print_r($response, true)), '</pre>';
+    //    sleep(3);
+    //    $params = [
+    //        'index' => 'site_dwn_' . $siteId,
+    //        'type'  => 'page',
+    //        'body'  => [
+    //            'query' => [
+    //                'match' => [
+    //                    'title' => 'стол',
+    //                ],
+    //            ],
+    //        ],
+    //    ];
+    //    $response = $this->client->search($params);
     //}
 }

@@ -6,7 +6,7 @@ namespace SiteAnalyzerBundle\Resource;
 abstract class AbstactResource
 {
     /**
-     * Fully qualified resource uri, like "http://www.example.com/123.html"
+     * Fully qualified resource url, like "http://www.example.com/123.html"
      *
      * @var string
      */
@@ -57,7 +57,7 @@ abstract class AbstactResource
 
 
     /**
-     * Get fully qualified resource uri, like "http://www.example.com/123.html"
+     * Get fully qualified resource url, like "http://www.example.com/123.html"
      *
      * @return null|string
      */
@@ -67,7 +67,7 @@ abstract class AbstactResource
     }
 
     /**
-     * Set fully qualified resource uri, like "http://www.example.com/123.html"
+     * Set fully qualified resource url, like "http://www.example.com/123.html"
      *
      * @param string $url
      * @return $this

@@ -43,16 +43,6 @@ class DefaultController extends Controller
 
         echo '123';
 
-        //$this->get('rs.site_manager')->runCron();
-
-        //$em = $this->getDoctrine()->getManager();
-        //$repositoryUser = $em->getRepository('AppBundle:User');
-
-        //Checking Access
-        //if (false === $this->isGranted('EDIT', $elementTreeSite)) {
-        //    throw new AccessDeniedException();
-        //}
-
         //return $this->render('default/index.html.twig', ['base_dir' => realpath($this->container->getParameter('kernel.root_dir') . '/..'),]);
         return $this->render('default/test.twig', ['rscontent' => implode("\n", $sendToTemplate)]);
     }

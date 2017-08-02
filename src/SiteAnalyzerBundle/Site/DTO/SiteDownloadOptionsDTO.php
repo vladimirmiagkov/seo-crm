@@ -6,7 +6,7 @@ namespace SiteAnalyzerBundle\Site\DTO;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * Options for site download
+ * Options for site download.
  */
 class SiteDownloadOptionsDTO
 {

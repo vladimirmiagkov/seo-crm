@@ -6,7 +6,7 @@ namespace AppBundle\SearchEngine\KeywordPosition;
 use DownloaderBundle\Service\HttpDownloaderService;
 
 /**
- * Helper for access to Yandex.
+ * Helper class for download Yandex xml data.
  */
 class YandexXmlDownload
 {
@@ -54,7 +54,7 @@ class YandexXmlDownload
         //];
         //$requestContext = \stream_context_create($requestOptions);
 
-        //$response = \file_get_contents(__DIR__ . '/yandexxmlrequest_debug.xml'); // DEBUG // TODO: Move this to tests
+        //$response = \file_get_contents(__DIR__ . '/yandexxmlrequest_debug.xml'); // DEBUG
         //$response = \file_get_contents($searchEngineRequestUri, true, $requestContext);
         $response = $this->downloader->request($searchEngineRequestUri, 'POST', [
             'body'    => $requestContent,

@@ -43,7 +43,6 @@ class KeywordPositionService
      */
     protected $searchEngineYandexXml;
 
-
     public function __construct(
         EntityManager $em,
         KeywordService $keywordService,
@@ -62,13 +61,14 @@ class KeywordPositionService
         $this->keywordPositionRepository = $em->getRepository('AppBundle:KeywordPosition');
     }
 
-
     /**
      * We check one keyword in ALL linked (to this keyword) search engines.
+     * Cron task.
      *
-     * @return null|array Debug info
+     * @param bool $updateKeywordPositionLastCheck
+     * @return array|null array = Debug info
      */
-    public function grabKeywordPositionFromSearchEngines()
+    public function grabKeywordPositionFromSearchEngines($updateKeywordPositionLastCheck = true)
     {
         $keyword = $this->keywordRepository->findKeywordForPositionCheck();
         if (!$keyword) {
@@ -76,21 +76,17 @@ class KeywordPositionService
             return null;
         }
 
-        $DEBUGlockAndUpdateKeyword = false; // TODO: remove debug
         $searchEngineDebugOutput = [];
 
         // For each search engine: check keyword position.
         /** @var SearchEngine $searchEngine */
-        foreach ($keyword->getSearchEngine() as $searchEngine) {
-            if (!$this->doWeNeedToCheckKeywordPositionInSearchEngine(
-                $keyword->getPositionLastCheck(),
-                $searchEngine->getCheckKeywordPositionPeriodicity())
-            ) {
+        foreach ($keyword->getSearchEngines() as $searchEngine) {
+            if (!$this->doWeNeedToCheckKeywordPositionInSearchEngine($keyword->getPositionLastCheck(), $searchEngine->getCheckKeywordPositionPeriodicity())) {
                 continue;
             }
 
-            // Start processing the keyword.
-            if ($DEBUGlockAndUpdateKeyword) {
+            // We lock keyword for each search engine.
+            if ($updateKeywordPositionLastCheck) {
                 $this->keywordService->lock($keyword);
             }
 
@@ -174,7 +170,7 @@ class KeywordPositionService
             ];
         }
 
-        if ($DEBUGlockAndUpdateKeyword) {
+        if ($updateKeywordPositionLastCheck) {
             $this->keywordService->updatePositionLastCheck($keyword);
         }
 

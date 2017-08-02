@@ -76,7 +76,8 @@ class RemoteBrowserDownloaderService implements DownloaderInterface, RemoteBrows
 
     /**
      * Get <a> links from loaded page(JavaScript processed already).
-     * Heavy long operation: retrieve 100 links take about 20-30 seconds long.
+     * WARNING: Heavy long operation: retrieve 100 links take about 20-30 seconds long.
+     * TODO: do we really need this??
      *
      * @return array
      * @see https://github.com/facebook/php-webdriver/wiki/Example-command-reference
@@ -104,7 +105,7 @@ class RemoteBrowserDownloaderService implements DownloaderInterface, RemoteBrows
 
     /**
      * Take a screenshot of the current loaded page.
-     * Heavy long operation: 1 - 3 seconds long.
+     * WARNING: Heavy long operation: 1 - 3 seconds long.
      *
      * @param string $saveToPath
      * @return string The screenshot in PNG format.
@@ -124,7 +125,6 @@ class RemoteBrowserDownloaderService implements DownloaderInterface, RemoteBrows
     public function setBrowserWindowSize($width, $height)
     {
         $this->driver->manage()->window()->setSize(new WebDriverDimension($width, $height));
-
         return $this;
     }
 

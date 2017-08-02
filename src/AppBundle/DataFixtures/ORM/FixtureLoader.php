@@ -49,9 +49,7 @@ class FixtureLoader implements FixtureInterface, ContainerAwareInterface
                 ->setUsername("admin")
                 ->setPlainPassword("123456")
                 ->setEnabled(true)
-                ->setRoles([
-                    User::ROLE_SUPER_ADMIN,
-                ]);
+                ->setRoles([User::ROLE_SUPER_ADMIN]); // ONLY ONE ROLE CAN BE SELECTED (we use symfony role hierarchy)
             $em->persist($superAdmin);
             $em->flush();
             $sendToTemplate[] = 'create $superAdmin';
@@ -63,9 +61,7 @@ class FixtureLoader implements FixtureInterface, ContainerAwareInterface
                 ->setUsername("user1")
                 ->setPlainPassword("123456")
                 ->setEnabled(true)
-                ->setRoles([
-                    User::ROLE_CLIENT,
-                ])
+                ->setRoles([User::ROLE_CLIENT])
                 ->setCreatedBy($superAdmin)
                 ->setModifiedBy($superAdmin);
             $em->persist($user1);
@@ -79,10 +75,7 @@ class FixtureLoader implements FixtureInterface, ContainerAwareInterface
                 ->setUsername("user2")
                 ->setPlainPassword("123456")
                 ->setEnabled(true)
-                ->setRoles([
-                    User::ROLE_SEO,
-                    //User::ROLE_CLIENT, // ONLY ONE ROLE CAN BE SELECTED (we use symfony role hierarchy)
-                ])
+                ->setRoles([User::ROLE_SEO])
                 ->setCreatedBy($user1)
                 ->setModifiedBy($user1);
             $em->persist($user2);
@@ -245,13 +238,13 @@ class FixtureLoader implements FixtureInterface, ContainerAwareInterface
                      ['k' => $keyword1, 'se' => $searchEngineYandex, 'pos' => 900, 'url' => 'http://www.site1.us/news', 'created' => new \DateTime('now -' . 19 . ' day')],
                      ['k' => $keyword1, 'se' => $searchEngineYandex, 'pos' => 900, 'url' => 'http://www.site1.us/news', 'created' => new \DateTime('now -' . 20 . ' day')],
                      ['k' => $keyword1, 'se' => $searchEngineYandex, 'pos' => 900, 'url' => 'http://www.site1.us/news', 'created' => new \DateTime('now -' . 21 . ' day')],
-                 ] as $k => $v) {
+                 ] as $keywordData) {
             $keywordPosition = new KeywordPosition();
-            $keywordPosition->setSearchEngine($v['se'])
-                ->setKeyword($v['k'])
-                ->setPosition($v['pos'])
-                ->setUrl($v['url'])
-                ->setCreatedAt($v['created']);
+            $keywordPosition->setSearchEngine($keywordData['se'])
+                ->setKeyword($keywordData['k'])
+                ->setPosition($keywordData['pos'])
+                ->setUrl($keywordData['url'])
+                ->setCreatedAt($keywordData['created']);
             $em->persist($keywordPosition);
         }
         $em->flush();
