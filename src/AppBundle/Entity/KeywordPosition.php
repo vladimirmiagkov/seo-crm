@@ -25,6 +25,8 @@ class KeywordPosition
     use IdTrait;
     use CreatedAtTrait;
 
+    const NOT_FOUND = 0;
+
     /**
      * Linked keyword.
      *
@@ -53,7 +55,7 @@ class KeywordPosition
      * SEO position for keyword in search engine.
      *  value = 0   position not found in SERP
      *              Add an record to the database every time(check),
-     *              even if there was a connection error (prevent DDOS search engine)
+     *              even if there was a connection error.
      *  value = int found position in SERP (1 - 999)
      *
      * @var int
@@ -61,7 +63,7 @@ class KeywordPosition
      * @ORM\Column(type="integer", nullable=false)
      * //@Serialization\Groups({"list"})
      */
-    protected $position;
+    protected $position = self::NOT_FOUND;
 
     /**
      * Site url in SERP.
@@ -74,12 +76,6 @@ class KeywordPosition
      * //@Assert\NotBlank()
      */
     protected $url;
-
-
-    public function __construct()
-    {
-    }
-
 
     /**
      * @return Keyword

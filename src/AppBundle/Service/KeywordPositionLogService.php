@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace AppBundle\Service;
 
+use AppBundle\Entity\KeywordPosition;
 use AppBundle\Entity\KeywordPositionLog;
 use AppBundle\Repository\KeywordPositionLogRepository;
 use Doctrine\ORM\EntityManager;
@@ -36,24 +37,29 @@ class KeywordPositionLogService
     }
 
     /**
-     * Create new instance of KeywordPositionLog
-     * TODO: hm...
+     * Add record to db.
      *
+     * @param $requests
+     * @param $responses
+     * @param $errors
+     * @param $status
+     * @param $keywordPosition
      * @return KeywordPositionLog
      */
-    public function createNewLogger()
+    public function addNewKeywordPositionLogToDb($requests, $responses, $errors, $status, $keywordPosition)
     {
-        return new KeywordPositionLog();
-    }
-
-    /**
-     * Add / save record to db.
-     *
-     * @param KeywordPositionLog $keywordPositionLog
-     * @return KeywordPositionLog
-     */
-    public function save(KeywordPositionLog $keywordPositionLog)
-    {
+        $keywordPositionLog = new KeywordPositionLog();
+        $keywordPositionLog->setRequests($requests);
+        $keywordPositionLog->setResponses($responses);
+        $keywordPositionLog->setErrors($errors);
+        $keywordPositionLog->setStatus($status);
+        if (null !== $keywordPosition) {
+            if (!($keywordPosition instanceof KeywordPosition)) {
+                throw new \RuntimeException('$keywordPosition MUST BE instanceof KeywordPosition');
+            } else {
+                $keywordPositionLog->setKeywordPosition($keywordPosition);
+            }
+        }
         $this->em->persist($keywordPositionLog);
         $this->em->flush();
 

@@ -3,7 +3,9 @@ declare(strict_types=1);
 
 namespace AppBundle\SearchEngine\KeywordPosition;
 
+use AppBundle\Entity\Keyword;
 use AppBundle\Entity\KeywordCompetitor;
+use AppBundle\Entity\SearchEngine;
 use AppBundle\SearchEngine\SerpResult;
 use SiteAnalyzerBundle\Utils\UriUtil;
 
@@ -39,32 +41,22 @@ class YandexXml
      *            https://tech.yandex.ru/xml/doc/dg/concepts/response_response-el-docpage/
      *            https://yandex.ru/support/search/query-language/qlanguage.html
      *
-     * @param string $keyword                Like "buy stuff"
-     * @param string $goalSiteDomain         Like "https://www.example.com"
-     * @param string $fromPlace              Region (or city) from which to search.
-     *                                       http://search.yaca.yandex.ru/geo.c2n //&lr=47
-     * @param int    $maxRequestSites        Maximum (total) search sites from the search engine.
-     * @param int    $requestSitesPerPage    Instruction for search engine. How many sites per page we requesting.
-     * @param int    $timeoutBetweenRequests Timeout between requesting page from search engine.
-     *                                       WARNING: If no timeout - search engine may disconnect with error: 503
-     *                                       (bruteforce).
-     * @param int    $startFromPage          From which page we need to start requesting search engine.
+     * @param Keyword      $keyword
+     * @param SearchEngine $searchEngine
+     * @param int          $startFromPage    From which page we need to start requesting search engine.
      *                                       This optimization is done to reduce the number of requests to search
      *                                       engine. We can assume this number from the last keyword position.
-     *
      * @return SerpResult
      */
     public function grabSerp(
-        string $keyword,
-        string $goalSiteDomain,
-        string $fromPlace = '',
-        int $maxRequestSites = 100,
-        int $requestSitesPerPage = 100,
-        int $timeoutBetweenRequests = 3,
+        Keyword $keyword,
+        SearchEngine $searchEngine,
         int $startFromPage = 0
     ): SerpResult
     {
         $serpResult = new SerpResult();
+        $serpResult->setKeyword($keyword);
+        $serpResult->setSearchEngine($searchEngine);
 
         $searchEngineRequestParameters = $this->searchEngineCredentials;
         if (empty($searchEngineRequestParameters)) {
@@ -73,51 +65,55 @@ class YandexXml
             return $serpResult;
         }
 
-        if (empty($keyword)) {
+        if (empty($keyword->getName())) {
             $serpResult->setStatus(SerpResult::STATUS_SEARCH_ENGINE_INVALID_ARGUMENT);
-            $serpResult->addError('$keyword can not be empty.');
+            $serpResult->addError('Keyword can not be empty.');
             return $serpResult;
         }
 
-        if (empty($goalSiteDomain)) {
+        if (empty($keyword->getSite()->getNamePuny())) {
             $serpResult->setStatus(SerpResult::STATUS_SEARCH_ENGINE_INVALID_ARGUMENT);
-            $serpResult->addError('$goalSiteDomain can not be empty.');
+            $serpResult->addError('Site name can not be empty.');
             return $serpResult;
         }
-        $goalSiteDomainWithoutWww = UriUtil::getHostFromUriWithoutWww($goalSiteDomain);
+        $goalSiteDomainWithoutWww = UriUtil::getHostFromUriWithoutWww($keyword->getSite()->getNamePuny());
         if (empty($goalSiteDomainWithoutWww)) {
             $serpResult->setStatus(SerpResult::STATUS_SEARCH_ENGINE_INVALID_ARGUMENT);
-            $serpResult->addError('$goalSiteDomain can not parse host.');
+            $serpResult->addError('$goalSiteDomainWithoutWww can not parse host.');
             return $serpResult;
         }
 
-        if ($fromPlace !== '') {
-            $searchEngineRequestParameters .= '&lr=' . $fromPlace;
+        if (!empty($keyword->getFromPlace())) {
+            $searchEngineRequestParameters .= '&lr=' . $keyword->getFromPlace();
         }
 
         // Find max requested page in search engine.
-        $maxRequestedPage = (int)\floor($maxRequestSites / $requestSitesPerPage);
+        $maxRequestedPage = (int)\floor($keyword->getSearchEngineRequestLimit() / $searchEngine->getCheckKeywordPositionRequestSitesPerPage());
         if ($maxRequestedPage < 1) {
             $maxRequestedPage = 1;
         }
 
-        $totalSitesCounter = $startFromPage * $requestSitesPerPage;
+        $totalSitesCounter = $startFromPage * $searchEngine->getCheckKeywordPositionRequestSitesPerPage();
         $stopRequestingSearchEngineFlag = false;
         for ($currentRequestPage = $startFromPage; $currentRequestPage < $maxRequestedPage; $currentRequestPage++) {
             if ($currentRequestPage > 0) {
-                \sleep($timeoutBetweenRequests);
+                \sleep($searchEngine->getCheckKeywordPositionTimeoutBetweenRequests());
             }
 
             // Download search engine url.
             list($request, $response) = $this->yandexXmlDownload->download(
                 $searchEngineRequestParameters,
-                $keyword,
+                $keyword->getName(),
                 $currentRequestPage,
-                $requestSitesPerPage
+                $searchEngine->getCheckKeywordPositionRequestSitesPerPage()
             );
-
+            if ($serpResult->getStatus() === SerpResult::STATUS_NO_RESULTS_YET) {
+                // Set first "non default" status: We make request to search engine.
+                $serpResult->setStatus(SerpResult::STATUS_ALL_GOOD);
+            }
             $serpResult->addRequest($request);
             $serpResult->addResponse($response);
+
             if (!$response) {
                 $serpResult->setStatus(SerpResult::STATUS_SEARCH_ENGINE_NOT_AVAILABLE);
                 $serpResult->addError('Search engine Yandex Xml unavailable.');
@@ -136,7 +132,10 @@ class YandexXml
             // Parse search engine results.
             $sites = $responseXmlDoc->xpath('response/results/grouping/group');
             foreach ($sites as $site) {
+                // Evaluate data for competitors.
                 $keywordCompetitor = $this->parseSiteFromSerp($site, $totalSitesCounter);
+                $keywordCompetitor->setKeyword($serpResult->getKeyword());
+                $keywordCompetitor->setSearchEngine($serpResult->getSearchEngine());
                 $serpResult->setSiteByIndex($totalSitesCounter, $keywordCompetitor);
 
                 // Try to find our goal site in SERP.
@@ -145,8 +144,8 @@ class YandexXml
                     $stopRequestingSearchEngineFlag = true;
 
                     // We save only first encountered site position.
-                    if (null === $serpResult->getGoalSiteIndex()) {
-                        $serpResult->setGoalSiteIndex($totalSitesCounter);
+                    if (null === $serpResult->getKeywordPosition()) {
+                        $serpResult->setKeywordPosition($totalSitesCounter);
                     }
                 }
 
@@ -163,11 +162,7 @@ class YandexXml
                 // TODO: do not request already requested pages from search engine. 
                 $serpResult = $this->grabSerp(
                     $keyword,
-                    $goalSiteDomain,
-                    $fromPlace,
-                    $maxRequestSites,
-                    $requestSitesPerPage,
-                    $timeoutBetweenRequests,
+                    $searchEngine,
                     0
                 );
                 break;

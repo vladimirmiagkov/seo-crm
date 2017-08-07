@@ -54,15 +54,16 @@ class YandexXmlDownload
         //];
         //$requestContext = \stream_context_create($requestOptions);
 
-        //$response = \file_get_contents(__DIR__ . '/yandexxmlrequest_debug.xml'); // DEBUG
+        $response = \file_get_contents(\dirname(__FILE__) . '/../../../../spec/AppBundle/SearchEngine/KeywordPosition/good_search_engine_response.xml'); // DEBUG
+
         //$response = \file_get_contents($searchEngineRequestUri, true, $requestContext);
-        $response = $this->downloader->request($searchEngineRequestUri, 'POST', [
-            'body'    => $requestContent,
-            'headers' => [
-                'Content-type'   => 'application/xml',
-                'Content-length' => \strlen($requestContent),
-            ],
-        ]);
+        //$response = $this->downloader->request($searchEngineRequestUri, 'POST', [
+        //    'body'    => $requestContent,
+        //    'headers' => [
+        //        'Content-type'   => 'application/xml',
+        //        'Content-length' => \strlen($requestContent),
+        //    ],
+        //]);
 
         return [(string)$requestContent, (string)$response];
     }

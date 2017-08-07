@@ -10,6 +10,7 @@ use AppBundle\Entity\SearchEngine;
 use AppBundle\Repository\KeywordPositionRepository;
 use AppBundle\Repository\KeywordRepository;
 use AppBundle\SearchEngine\KeywordPosition\YandexXml;
+use AppBundle\SearchEngine\SerpResult;
 use Doctrine\ORM\EntityManager;
 
 class KeywordPositionService
@@ -17,23 +18,23 @@ class KeywordPositionService
     /**
      * @var EntityManager
      */
-    protected $em;
+    private $em;
     /**
      * @var KeywordRepository
      */
-    protected $keywordRepository;
+    private $keywordRepository;
     /**
      * @var KeywordService
      */
-    protected $keywordService;
+    private $keywordService;
     /**
      * @var KeywordPositionRepository
      */
-    protected $keywordPositionRepository;
+    private $keywordPositionRepository;
     /**
      * @var KeywordPositionLogService
      */
-    protected $keywordPositionLogService;
+    private $keywordPositionLogService;
     /**
      * @var KeywordCompetitorService
      */
@@ -41,11 +42,13 @@ class KeywordPositionService
     /**
      * @var YandexXml
      */
-    protected $searchEngineYandexXml;
+    private $searchEngineYandexXml;
 
     public function __construct(
         EntityManager $em,
         KeywordService $keywordService,
+        KeywordRepository $keywordRepository,
+        KeywordPositionRepository $keywordPositionRepository,
         KeywordPositionLogService $keywordPositionLogService,
         KeywordCompetitorService $keywordCompetitorService,
         YandexXml $searchEngineYandexXml
@@ -53,30 +56,27 @@ class KeywordPositionService
     {
         $this->em = $em;
         $this->keywordService = $keywordService;
+        $this->keywordRepository = $keywordRepository; //$em->getRepository('AppBundle:Keyword');
+        $this->keywordPositionRepository = $keywordPositionRepository; //$em->getRepository('AppBundle:KeywordPosition');
         $this->keywordPositionLogService = $keywordPositionLogService;
         $this->keywordCompetitorService = $keywordCompetitorService;
         $this->searchEngineYandexXml = $searchEngineYandexXml;
-
-        $this->keywordRepository = $em->getRepository('AppBundle:Keyword');
-        $this->keywordPositionRepository = $em->getRepository('AppBundle:KeywordPosition');
     }
 
     /**
      * We check one keyword in ALL linked (to this keyword) search engines.
-     * Cron task.
      *
-     * @param bool $updateKeywordPositionLastCheck
-     * @return array|null array = Debug info
+     * @param bool $debugUpdateKeywordPositionLastCheck
+     * @return array|null
      */
-    public function grabKeywordPositionFromSearchEngines($updateKeywordPositionLastCheck = true)
+    public function grabKeywordPositionFromSearchEngines($debugUpdateKeywordPositionLastCheck = true)
     {
+        $result = [];
+
         $keyword = $this->keywordRepository->findKeywordForPositionCheck();
-        if (!$keyword) {
-            // No keyword to check - exit.
+        if (!$keyword) { // No keyword to check - exit.
             return null;
         }
-
-        $searchEngineDebugOutput = [];
 
         // For each search engine: check keyword position.
         /** @var SearchEngine $searchEngine */
@@ -85,98 +85,80 @@ class KeywordPositionService
                 continue;
             }
 
-            // We lock keyword for each search engine.
-            if ($updateKeywordPositionLastCheck) {
-                $this->keywordService->lock($keyword);
+            if ($debugUpdateKeywordPositionLastCheck) {
+                $this->keywordService->lock($keyword); // We "lock" keyword for each search engine.
             }
 
             $serpResult = null;
-            $keywordPositionLog = $this->keywordPositionLogService->createNewLogger();
-
-            // Request data from search engine.
             switch ($searchEngine->getType()) {
                 case SearchEngine::YANDEX_TYPE:
-                    // Get last position for keyword, if exists. This is optimization by requests count to search engine.
-                    $startFromPage = 0;
-                    $keywordLastCheckPosition = $this->keywordPositionRepository->findLastCheckPosition($keyword, $searchEngine);
-                    if ($keywordLastCheckPosition) {
-                        $startFromPage = (int)\floor($keywordLastCheckPosition->getPosition() / $searchEngine->getCheckKeywordPositionRequestSitesPerPage());
-                        if ($startFromPage < 1) { // If position was "-1" // TODO: is this possible?
-                            $startFromPage = 0;
-                        }
-                        // If, for example, the previous position(exist) was 393, and the new limit = 300, then we start search from 0 page
-                        if ($startFromPage >= (int)\floor($keyword->getSearchEngineRequestLimit() / $searchEngine->getCheckKeywordPositionRequestSitesPerPage())) {
-                            $startFromPage = 0;
-                        }
-                    }
-
                     $serpResult = $this->searchEngineYandexXml->grabSerp(
-                        $keyword->getName(),
-                        $keyword->getSite()->getNamePuny(),
-                        (string)$keyword->getFromPlace(),
-                        $keyword->getSearchEngineRequestLimit(),
-                        $searchEngine->getCheckKeywordPositionRequestSitesPerPage(),
-                        $searchEngine->getCheckKeywordPositionTimeoutBetweenRequests(),
-                        (int)$startFromPage
+                        $keyword,
+                        $searchEngine,
+                        $this->getStartRequestingFromPage($keyword, $searchEngine)
                     );
-
                     break;
-
                 case SearchEngine::GOOGLE_TYPE:
                     // TODO: Parsing GOOGLE not implemented yet.
                     break;
-
                 default:
             }
 
-            // Processing search engine results.
-            if (null !== $serpResult) {
-                $keywordPositionLog->setErrors($serpResult->getErrors());
-                $keywordPositionLog->setStatus($serpResult->getStatus());
-                $keywordPositionLog->setRequests($serpResult->getRequests());
-                $keywordPositionLog->setResponses($serpResult->getResponses());
-
-                if ($serpResult->didWeFoundSomeSitesInSerp()) {
-                    if ($serpResult->findGoalSite()) {
-                        // Save keyword position.
-                        $keywordPosition = $this->saveNewKeywordPosition(
-                            $keyword,
-                            $searchEngine,
-                            ($serpResult->getGoalSiteIndex() + 1),
-                            $serpResult->findGoalSite()->getUrl()
-                        );
-                        $keywordPositionLog->setKeywordPosition($keywordPosition);
-                    }
-
-                    // Evaluate data for competitors.
-                    foreach ($serpResult->getSites() as $competitorIndex => $competitor) {
-                        $competitor->setKeyword($keyword);
-                        $competitor->setSearchEngine($searchEngine);
-                        $serpResult->setSiteByIndex($competitorIndex, $competitor);
-                    }
-                    // Save competitors.
-                    $this->keywordCompetitorService->saveNewCompetitors($serpResult->getSites());
-                }
-
-                // Save keyword position log.
-                $this->keywordPositionLogService->save($keywordPositionLog);
-            }
-
-            $searchEngineDebugOutput[$searchEngine->getName()] = [
-                //'serpResult' => $serpResult ?? null,
-                'keywordLastCheckPosition' => $keywordLastCheckPosition ?? null,
-                'keywordPosition'          => $keywordPosition ?? null,
-                'error'                    => $keywordPositionLog->getErrors(),
-            ];
+            null !== $serpResult ? $result[] = $serpResult : null;
         }
 
-        if ($updateKeywordPositionLastCheck) {
+        if ($debugUpdateKeywordPositionLastCheck) {
             $this->keywordService->updatePositionLastCheck($keyword);
         }
 
+        return $result;
+    }
+
+    /**
+     * Save search engines results (SERPs) to db.
+     * TODO: move to own module ? ...
+     *
+     * @param SerpResult[] $serps
+     * @return array|null
+     */
+    public function saveSerpsToDb(array $serps)
+    {
+        if (empty($serps)) {
+            return null;
+        }
+
+        //$debugOutput = [];
+        foreach ($serps as $serpResult) {
+            // Save keyword position.
+            $keywordPosition = null;
+            if ($serpResult->getKeywordPosition()) {
+                $keywordPosition = $this->saveKeywordPositionToDb($serpResult->getKeywordPosition());
+            }
+
+            // Save competitors.
+            if ($serpResult->didWeFoundSomeSitesInSerp()) {
+                $this->keywordCompetitorService->saveCompetitorsToDb($serpResult->getSites());
+            }
+
+            // Save logging results.
+            $keywordPositionLog = $this->keywordPositionLogService->addNewKeywordPositionLogToDb(
+                $serpResult->getRequests(),
+                $serpResult->getResponses(),
+                $serpResult->getErrors(),
+                $serpResult->getStatus(),
+                $keywordPosition
+            );
+
+            //$debugOutput[$searchEngine->getName()] = [
+            //    //'keywordLastCheckPosition' => $this->keywordPositionRepository->findLastCheckPosition($keyword, $searchEngine),
+            //    'keywordPosition'          => $keywordPositionLog->getKeywordPosition(),
+            //    'error'                    => $keywordPositionLog->getErrors(),
+            //];
+        }
+
         return [
-            'keyword'      => $keyword,
-            'searchEngine' => $searchEngineDebugOutput,
+            //'keyword'      => $keyword,
+            //'searchEngine' => $debugOutput,
         ];
     }
 
@@ -205,28 +187,40 @@ class KeywordPositionService
     }
 
     /**
+     * Get page number, for search engine, from which we start requesting.
+     * This is optimization by requests count to search engine.
+     *
      * @param Keyword      $keyword
      * @param SearchEngine $searchEngine
-     * @param int          $position
-     * @param string       $url
+     * @return int
+     */
+    public function getStartRequestingFromPage(Keyword $keyword, SearchEngine $searchEngine): int
+    {
+        $startFromPage = 0;
+        $keywordLastCheckPosition = $this->keywordPositionRepository->findLastCheckPosition($keyword, $searchEngine);
+        if ($keywordLastCheckPosition) {
+            $startFromPage = (int)\floor(
+                $keywordLastCheckPosition->getPosition() / $searchEngine->getCheckKeywordPositionRequestSitesPerPage()
+            );
+            if ($startFromPage < 1) { // If position was "-1" // TODO: is this possible?
+                $startFromPage = 0;
+            }
+            // If, for example, the previous position(exist) was 393, and the new limit = 300, then we start search from 0 page
+            if ($startFromPage >= (int)\floor($keyword->getSearchEngineRequestLimit() / $searchEngine->getCheckKeywordPositionRequestSitesPerPage())) {
+                $startFromPage = 0;
+            }
+        }
+        return $startFromPage;
+    }
+
+    /**
+     * @param KeywordPosition $keywordPosition
      * @return KeywordPosition
      */
-    public function saveNewKeywordPosition(
-        Keyword $keyword,
-        SearchEngine $searchEngine,
-        int $position,
-        string $url
-    ): KeywordPosition
+    public function saveKeywordPositionToDb(KeywordPosition $keywordPosition): KeywordPosition
     {
-        $keywordPosition = new KeywordPosition();
-        $keywordPosition
-            ->setKeyword($keyword)
-            ->setSearchEngine($searchEngine)
-            ->setPosition($position)
-            ->setUrl($url);
         $this->em->persist($keywordPosition);
         $this->em->flush();
-
         return $keywordPosition;
     }
 }

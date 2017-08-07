@@ -3,7 +3,10 @@ declare(strict_types=1);
 
 namespace AppBundle\SearchEngine;
 
+use AppBundle\Entity\Keyword;
 use AppBundle\Entity\KeywordCompetitor;
+use AppBundle\Entity\KeywordPosition;
+use AppBundle\Entity\SearchEngine;
 use AppBundle\Entity\Traits\ErrorsTrait;
 use AppBundle\Entity\Traits\RequestsResponsesTrait;
 use AppBundle\Entity\Traits\StatusTrait;
@@ -18,10 +21,40 @@ class SerpResult
     use StatusTrait;
     use RequestsResponsesTrait;
 
-    const STATUS_ALL_GOOD = 0;
-    const STATUS_SEARCH_ENGINE_INVALID_ARGUMENT = 1;
-    const STATUS_SEARCH_ENGINE_NOT_AVAILABLE = 2;
-    const STATUS_SEARCH_ENGINE_ERROR = 4;
+    /**
+     * Default begin status. No search engine requested yet.
+     */
+    const STATUS_NO_RESULTS_YET = 0;
+    /**
+     * Search engine requested successfully. No errors.
+     */
+    const STATUS_ALL_GOOD = 1;
+    /**
+     * Invalid arguments for search engine.
+     */
+    const STATUS_SEARCH_ENGINE_INVALID_ARGUMENT = 2;
+    /**
+     * Search engine: not available; no connection; connection refused; ...
+     */
+    const STATUS_SEARCH_ENGINE_NOT_AVAILABLE = 4;
+    /**
+     * Some error from search engine: cannot parse SERP; some other error; ...
+     */
+    const STATUS_SEARCH_ENGINE_ERROR = 8;
+
+    /**
+     * Linked keyword.
+     *
+     * @var Keyword
+     */
+    protected $keyword;
+
+    /**
+     * Linked search engine.
+     *
+     * @var SearchEngine
+     */
+    protected $searchEngine;
 
     /**
      * Array of source html "Request".
@@ -42,7 +75,7 @@ class SerpResult
      *
      * @var \int
      */
-    protected $status = self::STATUS_ALL_GOOD;
+    protected $status = self::STATUS_NO_RESULTS_YET;
 
     /**
      * Array of KeywordCompetitor.
@@ -53,11 +86,11 @@ class SerpResult
     protected $sites;
 
     /**
-     * Our goal site index (in $sites) in SERP
+     * If we found our goal site - we set KeywordPosition.
      *
-     * @var null|\int
+     * @var null|KeywordPosition
      */
-    protected $goalSiteIndex;
+    protected $keywordPosition = null;
 
     /**
      * Array of human readable "errors" and maybe "warnings".
@@ -65,28 +98,6 @@ class SerpResult
      * @var null|\string[]
      */
     protected $errors;
-
-
-    public function __construct()
-    {
-    }
-
-
-    /**
-     * Find goal site, if exists.
-     *
-     * @return null|KeywordCompetitor
-     */
-    public function findGoalSite()
-    {
-        if (null !== $this->getGoalSiteIndex()) {
-            /** @var KeywordCompetitor $keywordCompetitor */
-            $keywordCompetitor = $this->getSites()[$this->getGoalSiteIndex()];
-            return $keywordCompetitor;
-        }
-
-        return null;
-    }
 
     /**
      * @return bool
@@ -101,6 +112,42 @@ class SerpResult
     }
 
     // Getters and Setters =============================================================================================
+
+    /**
+     * @return Keyword
+     */
+    public function getKeyword(): Keyword
+    {
+        return $this->keyword;
+    }
+
+    /**
+     * @param Keyword $keyword
+     * @return $this
+     */
+    public function setKeyword(Keyword $keyword)
+    {
+        $this->keyword = $keyword;
+        return $this;
+    }
+
+    /**
+     * @return SearchEngine
+     */
+    public function getSearchEngine(): SearchEngine
+    {
+        return $this->searchEngine;
+    }
+
+    /**
+     * @param SearchEngine $searchEngine
+     * @return $this
+     */
+    public function setSearchEngine(SearchEngine $searchEngine)
+    {
+        $this->searchEngine = $searchEngine;
+        return $this;
+    }
 
     /**
      * @return KeywordCompetitor[]|null
@@ -122,20 +169,27 @@ class SerpResult
     }
 
     /**
-     * @return int|null
+     * Set KeywordPosition to serp.
+     *
+     * @param int $goalSiteIndex
+     * @return $this
      */
-    public function getGoalSiteIndex()
+    public function setKeywordPosition(int $goalSiteIndex)
     {
-        return $this->goalSiteIndex;
+        $this->keywordPosition = (new KeywordPosition())
+            ->setKeyword($this->getkeyword())
+            ->setSearchEngine($this->getSearchEngine())
+            ->setPosition(($goalSiteIndex + 1))
+            ->setUrl($this->getSites()[$goalSiteIndex]->getUrl());
+
+        return $this;
     }
 
     /**
-     * @param int|null $goalSiteIndex
-     * @return $this
+     * @return KeywordPosition|null
      */
-    public function setGoalSiteIndex(int $goalSiteIndex)
+    public function getKeywordPosition()
     {
-        $this->goalSiteIndex = $goalSiteIndex;
-        return $this;
+        return $this->keywordPosition;
     }
 }

@@ -53,7 +53,7 @@ class KeywordCompetitorService
      *
      * @return null|array
      */
-    public function saveNewCompetitors($competitors)
+    public function saveCompetitorsToDb($competitors)
     {
         if (empty($competitors)) {
             return null;

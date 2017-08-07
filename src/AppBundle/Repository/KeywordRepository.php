@@ -24,7 +24,7 @@ class KeywordRepository extends EntityRepository
             ->andWhere(self::ALIAS . '.active = true');
 
         // There are linked search engines
-        $qb->andWhere($qb->expr()->gt('size(' . self::ALIAS . '.searchEngine)', 0));
+        $qb->andWhere($qb->expr()->gt('size(' . self::ALIAS . '.searchEngines)', 0));
 
         // Since last LOCK passed more than n seconds
         $lockTime = (new \DateTime())->modify('-' . (int)SearchEngine::CHECK_KEYWORD_POSITION_LOCK_TIMEOUT . ' seconds')->format('Y-m-d H:i:s');

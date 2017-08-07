@@ -165,6 +165,9 @@ class SearchEngine
     }
 
     /**
+     * Timeout between requesting page from search engine. WARNING: If no timeout - search engine may disconnect with
+     * error: 503 (bruteforce).
+     *
      * @return int
      */
     public function getCheckKeywordPositionTimeoutBetweenRequests(): int
@@ -183,6 +186,8 @@ class SearchEngine
     }
 
     /**
+     * Instruction for search engine. How many sites per page we requesting.
+     *
      * @return int
      */
     public function getCheckKeywordPositionRequestSitesPerPage(): int
@@ -196,6 +201,9 @@ class SearchEngine
      */
     public function setCheckKeywordPositionRequestSitesPerPage(int $checkKeywordPositionRequestSitesPerPage)
     {
+        if ($checkKeywordPositionRequestSitesPerPage < 1) {
+            throw new \LogicException('$checkKeywordPositionRequestSitesPerPage can not be less than 1');
+        }
         $this->checkKeywordPositionRequestSitesPerPage = $checkKeywordPositionRequestSitesPerPage;
         return $this;
     }

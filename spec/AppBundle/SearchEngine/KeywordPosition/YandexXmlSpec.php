@@ -3,6 +3,9 @@ declare(strict_types=1);
 
 namespace spec\AppBundle\SearchEngine\KeywordPosition;
 
+use AppBundle\Entity\Keyword;
+use AppBundle\Entity\SearchEngine;
+use AppBundle\Entity\Site;
 use AppBundle\SearchEngine\KeywordPosition\YandexXml;
 use AppBundle\SearchEngine\KeywordPosition\YandexXmlDownload;
 use AppBundle\SearchEngine\SerpResult;
@@ -31,17 +34,25 @@ class YandexXmlSpec extends ObjectBehavior
 
     function it_should_found_keyword_position_in_serp()
     {
-        $serpResult = $this->grabSerp('fake_keyword', 'http://www.elecmet52.ru');
+        $site = (new Site())->setName('http://www.elecmet52.ru');
+        $keyword = (new Keyword())->setSite($site)->setName('fake_keyword');
+        $searchEngine = new SearchEngine();
+
+        $serpResult = $this->grabSerp($keyword, $searchEngine);
         $serpResult->getResponses()->shouldBe([\file_get_contents(self::GOOD_SEARCH_ENGINE_RESPONSE_XML)]);
         $serpResult->getStatus()->shouldBe(SerpResult::STATUS_ALL_GOOD);
-        $serpResult->getGoalSiteIndex()->shouldBe(5); // Our goal site position in serp.
+        $serpResult->getKeywordPosition()->getPosition()->shouldBe(6);
     }
 
     function it_should_not_found_keyword_position_in_serp()
     {
-        $serpResult = $this->grabSerp('fake_keyword', 'http://www.notexistssite.com');
+        $site = (new Site())->setName('http://www.notexistssite.com');
+        $keyword = (new Keyword())->setSite($site)->setName('fake_keyword');
+        $searchEngine = new SearchEngine();
+
+        $serpResult = $this->grabSerp($keyword, $searchEngine);
         $serpResult->getStatus()->shouldBe(SerpResult::STATUS_ALL_GOOD);
-        $serpResult->getGoalSiteIndex()->shouldBeNull(); // NOT FOUND. Our goal site position in serp.
+        $serpResult->getKeywordPosition()->shouldBeNull(); // Our goal site position NOT FOUND in serp.
     }
 
     function it_has_bad_status_when_search_engine_not_available(YandexXmlDownload $yandexXmlDownload)
@@ -52,7 +63,11 @@ class YandexXmlSpec extends ObjectBehavior
             0,
             100)->willReturn(['', '']);
 
-        $serpResult = $this->grabSerp('fake_keyword', 'http://www.notexistssite.com');
+        $site = (new Site())->setName('http://www.notexistssite.com');
+        $keyword = (new Keyword())->setSite($site)->setName('fake_keyword');
+        $searchEngine = new SearchEngine();
+
+        $serpResult = $this->grabSerp($keyword, $searchEngine);
         $serpResult->getStatus()->shouldBe(SerpResult::STATUS_SEARCH_ENGINE_NOT_AVAILABLE);
     }
 }

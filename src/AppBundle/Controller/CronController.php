@@ -36,28 +36,29 @@ class CronController extends Controller
         }
 
         // TODO: Make full log for cron jobs, for visualising problems...
+        // TODO: Move cron jobs to some "TaskRunner"??
 
-        $result = [];
-        // Check keywords positions in search engines.
-        $resultFromSearchEngine = $keywordPositionService->grabKeywordPositionFromSearchEngines(false);
-        if ($resultFromSearchEngine['keyword']) {
-            $result[] = 'Check keyword:';
-            $result[] = '&nbsp;&nbsp;' . 'site name = ' . $resultFromSearchEngine['keyword']->getSite()->getName();
-            $result[] = '&nbsp;&nbsp;' . 'keyword name = ' . $resultFromSearchEngine['keyword']->getName();
-            foreach ($resultFromSearchEngine['searchEngine'] as $searchEngineName => $searchEngineValues) {
-                $result[] = '&nbsp;&nbsp;' . 'searchEngineName = ' . $searchEngineName;
-                if (!empty($searchEngineValues['error'])) {
-                    $result[] = '&nbsp;&nbsp;&nbsp;&nbsp;' . 'error = ' . implode("<br>\r\n<br>\r\n", $searchEngineValues['error']);
-                }
-                if (null !== $searchEngineValues['keywordPosition']) {
-                    $result[] = '&nbsp;&nbsp;&nbsp;&nbsp;' . 'keywordPosition = ' . $searchEngineValues['keywordPosition']->getPosition();
-                }
-                if (null !== $searchEngineValues['keywordLastCheckPosition']) {
-                    $result[] = '&nbsp;&nbsp;&nbsp;&nbsp;' . 'keywordLastCheckPosition = ' . $searchEngineValues['keywordLastCheckPosition']->getPosition();
-                }
-            }
-            $result[] = '---------------------------------------------------------------';
-        }
+        $debugOutput = [];
+        $serps = $keywordPositionService->grabKeywordPositionFromSearchEngines(false);
+        $keywordPositionService->saveSerpsToDb($serps);
+        //if ($resultFromSearchEngine['keyword']) {
+        //    $debugOutput[] = 'Check keyword:';
+        //    $debugOutput[] = '&nbsp;&nbsp;' . 'site name = ' . $resultFromSearchEngine['keyword']->getSite()->getName();
+        //    $debugOutput[] = '&nbsp;&nbsp;' . 'keyword name = ' . $resultFromSearchEngine['keyword']->getName();
+        //    foreach ($resultFromSearchEngine['searchEngine'] as $searchEngineName => $searchEngineValues) {
+        //        $debugOutput[] = '&nbsp;&nbsp;' . 'searchEngineName = ' . $searchEngineName;
+        //        if (!empty($searchEngineValues['error'])) {
+        //            $debugOutput[] = '&nbsp;&nbsp;&nbsp;&nbsp;' . 'error = ' . implode("<br>\r\n<br>\r\n", $searchEngineValues['error']);
+        //        }
+        //        if (null !== $searchEngineValues['keywordPosition']) {
+        //            $debugOutput[] = '&nbsp;&nbsp;&nbsp;&nbsp;' . 'keywordPosition = ' . $searchEngineValues['keywordPosition']->getPosition();
+        //        }
+        //        if (null !== $searchEngineValues['keywordLastCheckPosition']) {
+        //            $debugOutput[] = '&nbsp;&nbsp;&nbsp;&nbsp;' . 'keywordLastCheckPosition = ' . $searchEngineValues['keywordLastCheckPosition']->getPosition();
+        //        }
+        //    }
+        //    $debugOutput[] = '---------------------------------------------------------------';
+        //}
 
         // TODO: Check pages in search engines index.
 
@@ -68,7 +69,7 @@ class CronController extends Controller
         //     TODO: Clear keyword position log in db
 
 
-        return new Response(implode("<br>\r\n", $result));
+        return new Response(implode("<br>\r\n", $debugOutput));
     }
 
     ///**

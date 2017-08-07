@@ -221,6 +221,8 @@ class Keyword
     }
 
     /**
+     * Region (or city) from which to search. http://search.yaca.yandex.ru/geo.c2n //&lr=47
+     *
      * @return null|string
      */
     public function getFromPlace()
@@ -239,6 +241,8 @@ class Keyword
     }
 
     /**
+     * Maximum (total) search sites from the search engine.
+     *
      * @return int
      */
     public function getSearchEngineRequestLimit(): int

@@ -35,18 +35,49 @@ services:
         autoconfigure: false
         public: true
 
-    AppBundle\Security\Core\RsAcl:
-        public: true
+    AppBundle\Service\ElasticSearchService:
+        arguments:
+            $hosts: "%elastic_search_hosts%"
 
     AppBundle\EventListener\DoctrineDebugListener: # TODO: disable this on production! or move to ENV
         tags:
             - {name: kernel.event_listener, event: kernel.controller, method: onKernelController}
             - {name: kernel.event_listener, event: kernel.response, method: onKernelResponse}
 
+    AppBundle\Security\Core\RsAcl:
+        public: true
 
-    AppBundle\Service\ElasticSearchService:
-        arguments:
-            $hosts: "%elastic_search_hosts%"
+
+    AppBundle\Repository\KeywordCompetitorRepository:
+        factory: doctrine.orm.entity_manager:getRepository
+        arguments: [AppBundle\Entity\KeywordCompetitor]
+    AppBundle\Repository\KeywordPositionLogRepository:
+        factory: doctrine.orm.entity_manager:getRepository
+        arguments: [AppBundle\Entity\KeywordPositionLog]
+    AppBundle\Repository\KeywordPositionRepository:
+        factory: doctrine.orm.entity_manager:getRepository
+        arguments: [AppBundle\Entity\KeywordPosition]
+    AppBundle\Repository\KeywordRepository:
+        factory: doctrine.orm.entity_manager:getRepository
+        arguments: [AppBundle\Entity\Keyword]
+    AppBundle\Repository\PageRepository:
+        factory: doctrine.orm.entity_manager:getRepository
+        arguments: [AppBundle\Entity\Page]
+    AppBundle\Repository\SearchEngineRepository:
+        factory: doctrine.orm.entity_manager:getRepository
+        arguments: [AppBundle\Entity\SearchEngine]
+    AppBundle\Repository\SiteRepository:
+        factory: doctrine.orm.entity_manager:getRepository
+        arguments: [AppBundle\Entity\Site]
+    AppBundle\Repository\SiteScheduleRepository:
+        factory: doctrine.orm.entity_manager:getRepository
+        arguments: [AppBundle\Entity\SiteSchedule]
+    AppBundle\Repository\SiteStampRepository:
+        factory: doctrine.orm.entity_manager:getRepository
+        arguments: [AppBundle\Entity\SiteStamp]
+    AppBundle\Repository\UserRepository:
+        factory: doctrine.orm.entity_manager:getRepository
+        arguments: [AppBundle\Entity\User]
 
 
     AppBundle\SearchEngine\KeywordPosition\YandexXml:

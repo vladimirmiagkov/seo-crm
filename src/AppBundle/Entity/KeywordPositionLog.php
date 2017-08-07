@@ -48,7 +48,7 @@ class KeywordPositionLog
      * @ORM\Column(type="integer", nullable=false)
      * @Serialization\Groups({"list"})
      */
-    protected $status = SerpResult::STATUS_ALL_GOOD;
+    protected $status = SerpResult::STATUS_NO_RESULTS_YET;
 
 
     public function __construct()
