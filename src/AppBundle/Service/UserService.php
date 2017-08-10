@@ -28,12 +28,11 @@ class UserService
      */
     protected $userRepository;
 
-    public function __construct(ValidatorInterface $validator, EntityManager $em)
+    public function __construct(ValidatorInterface $validator, EntityManager $em, UserRepository $userRepository)
     {
         $this->validator = $validator;
         $this->em = $em;
-
-        $this->userRepository = $this->em->getRepository('AppBundle:User');
+        $this->userRepository = $userRepository;
     }
 
     /**

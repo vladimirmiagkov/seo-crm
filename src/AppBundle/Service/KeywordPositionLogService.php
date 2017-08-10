@@ -27,13 +27,13 @@ class KeywordPositionLogService
 
     public function __construct(
         ValidatorInterface $validator,
-        EntityManager $em
+        EntityManager $em,
+        KeywordPositionLogRepository $keywordPositionLogRepository
     )
     {
         $this->validator = $validator;
         $this->em = $em;
-
-        $this->keywordPositionLogRepository = $em->getRepository('AppBundle:KeywordPositionLog');
+        $this->keywordPositionLogRepository = $keywordPositionLogRepository;
     }
 
     /**

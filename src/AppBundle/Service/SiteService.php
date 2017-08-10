@@ -35,14 +35,14 @@ class SiteService
     public function __construct(
         ValidatorInterface $validator,
         EntityManager $em,
-        RsAcl $acl
+        RsAcl $acl,
+        SiteRepository $siteRepository
     )
     {
         $this->validator = $validator;
         $this->em = $em;
         $this->acl = $acl;
-
-        $this->siteRepository = $em->getRepository('AppBundle:Site');
+        $this->siteRepository = $siteRepository;
     }
 
     /**

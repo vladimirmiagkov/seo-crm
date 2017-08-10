@@ -28,13 +28,13 @@ class SiteScheduleService
 
     public function __construct(
         ValidatorInterface $validator,
-        EntityManager $em
+        EntityManager $em,
+        SiteScheduleRepository $siteScheduleRepository
     )
     {
         $this->validator = $validator;
         $this->em = $em;
-
-        $this->siteScheduleRepository = $em->getRepository('AppBundle:SiteSchedule');
+        $this->siteScheduleRepository = $siteScheduleRepository;
     }
 
     /**

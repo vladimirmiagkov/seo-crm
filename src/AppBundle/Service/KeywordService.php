@@ -28,13 +28,13 @@ class KeywordService
 
     public function __construct(
         ValidatorInterface $validator,
-        EntityManager $em
+        EntityManager $em,
+        KeywordRepository $keywordRepository
     )
     {
         $this->validator = $validator;
         $this->em = $em;
-
-        $this->keywordRepository = $em->getRepository('AppBundle:Keyword');
+        $this->keywordRepository = $keywordRepository;
     }
 
 

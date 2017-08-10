@@ -56,8 +56,8 @@ class KeywordPositionService
     {
         $this->em = $em;
         $this->keywordService = $keywordService;
-        $this->keywordRepository = $keywordRepository; //$em->getRepository('AppBundle:Keyword');
-        $this->keywordPositionRepository = $keywordPositionRepository; //$em->getRepository('AppBundle:KeywordPosition');
+        $this->keywordRepository = $keywordRepository;
+        $this->keywordPositionRepository = $keywordPositionRepository;
         $this->keywordPositionLogService = $keywordPositionLogService;
         $this->keywordCompetitorService = $keywordCompetitorService;
         $this->searchEngineYandexXml = $searchEngineYandexXml;

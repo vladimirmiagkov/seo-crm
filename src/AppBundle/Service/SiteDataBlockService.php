@@ -39,13 +39,13 @@ class SiteDataBlockService
 
     public function __construct(
         ValidatorInterface $validator,
-        EntityManager $em
+        EntityManager $em,
+        KeywordPositionRepository $keywordPositionRepository
     )
     {
         $this->validator = $validator;
         $this->em = $em;
-
-        $this->keywordPositionRepository = $em->getRepository('AppBundle:KeywordPosition');
+        $this->keywordPositionRepository = $keywordPositionRepository;
     }
 
     /**

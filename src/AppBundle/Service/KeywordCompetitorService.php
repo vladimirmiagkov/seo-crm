@@ -33,13 +33,13 @@ class KeywordCompetitorService
 
     public function __construct(
         ValidatorInterface $validator,
-        EntityManager $em
+        EntityManager $em,
+        KeywordCompetitorRepository $keywordCompetitorRepository
     )
     {
         $this->validator = $validator;
         $this->em = $em;
-
-        $this->keywordCompetitorRepository = $em->getRepository('AppBundle:KeywordCompetitor');
+        $this->keywordCompetitorRepository = $keywordCompetitorRepository;
     }
 
 

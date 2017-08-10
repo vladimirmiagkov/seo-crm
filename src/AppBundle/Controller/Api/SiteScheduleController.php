@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace AppBundle\Controller\Api;
 
+use AppBundle\Repository\SiteScheduleRepository;
 use AppBundle\Service\SiteScheduleService;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
@@ -19,10 +20,9 @@ class SiteScheduleController extends Controller
      * @Method("GET")
      * @Security("has_role('ROLE_ADMIN')")
      */
-    public function listAction()
+    public function listAction(SiteScheduleRepository $siteScheduleRepository)
     {
-        $repository = $this->getRepository();
-        $objects = ['result' => $repository->findAll()];
+        $objects = ['result' => $siteScheduleRepository->findAll()];
         $result = $this->get('jms_serializer')->serialize($objects, 'json', SerializationContext::create()
             ->setGroups(array('list'))
             ->setSerializeNull(true)
@@ -49,16 +49,5 @@ class SiteScheduleController extends Controller
             ->enableMaxDepthChecks());
 
         return new Response($result);
-    }
-
-
-    /**
-     * @return \AppBundle\Repository\SiteScheduleRepository|\Doctrine\Common\Persistence\ObjectRepository
-     */
-    protected function getRepository()
-    {
-        $em = $this->getDoctrine()->getManager();
-        $repository = $em->getRepository('AppBundle:SiteSchedule');
-        return $repository;
     }
 }

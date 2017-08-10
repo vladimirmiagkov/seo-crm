@@ -21,10 +21,9 @@ class UserController extends Controller
      * @Method("GET")
      * @Security("has_role('ROLE_ADMIN')")
      */
-    public function listAction()
+    public function listAction(UserRepository $userRepository)
     {
-        $repository = $this->getRepository();
-        $users = ['result' => $repository->findAll()];
+        $users = ['result' => $userRepository->findAll()];
         $result = $this->get('jms_serializer')->serialize($users, 'json', SerializationContext::create()
             ->setGroups(['list'])
             ->setSerializeNull(true)
@@ -82,15 +81,5 @@ class UserController extends Controller
         $result = ['result' => $userService->deleteUser($id, $this->getUser())];
 
         return new Response(\json_encode($result), 204); //204 No Content: The server successfully processed the request and is not returning any content.
-    }
-
-    /**
-     * @return \AppBundle\Repository\UserRepository|\Doctrine\Common\Persistence\ObjectRepository
-     */
-    protected function getRepository()
-    {
-        $em = $this->getDoctrine()->getManager();
-        $repository = $em->getRepository('AppBundle:User');
-        return $repository;
     }
 }
