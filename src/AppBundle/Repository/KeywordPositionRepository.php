@@ -16,7 +16,7 @@ class KeywordPositionRepository extends EntityRepository
     const ALIAS = 'kp';
 
     /**
-     * Get keywords positions by time range.
+     * Find keywords positions by time range.
      * WARNING: Optimization by speed and low memory consumption!
      *
      * @param array          $keywordsIds

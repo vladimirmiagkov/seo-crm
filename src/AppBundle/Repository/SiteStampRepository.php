@@ -7,4 +7,5 @@ use Doctrine\ORM\EntityRepository;
 
 class SiteStampRepository extends EntityRepository
 {
+    const ALIAS = 'sst';
 }

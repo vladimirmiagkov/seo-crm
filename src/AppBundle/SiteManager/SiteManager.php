@@ -66,8 +66,6 @@ class SiteManager
         $siteDownloadOptions = new SiteDownloadOptionsDTO();
         $siteDownloadOptions->siteId = 1;
         $siteDownloadOptions->siteHost = 'http://www.rsite.ru';
-        //$siteDownloadOptions->siteHost = 'http://www.xn----7sba7blhgimd.xn--p1ai'; //www.атлант-про.рф
-        //$siteDownloadOptions->siteHost = 'http://www.podmoskovnaya-riviera.ru';
         $siteDownloadOptions->siteStampName = 'test';
         $siteDownloadOptions->excludePathsFromCrawling = ['/admin/*', '/aaaaa/'];
 

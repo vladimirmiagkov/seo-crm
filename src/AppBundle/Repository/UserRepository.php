@@ -9,6 +9,8 @@ use Doctrine\ORM\EntityRepository;
 
 class UserRepository extends EntityRepository
 {
+    const ALIAS = 'user';
+
     /**
      * @param string $username
      * @return User

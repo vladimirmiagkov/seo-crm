@@ -67,7 +67,8 @@ class SiteDataBlockService
         $offset = null,
         string $dateFrom = '',
         string $dateTo = '',
-        $filter = null)
+        $filter = null
+    )
     {
         $result = null;
         $paginator = null;

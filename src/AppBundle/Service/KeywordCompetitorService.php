@@ -46,7 +46,7 @@ class KeywordCompetitorService
     /**
      * Add (save) new competitors to db.
      * Business logic: We add only few competitors from top,
-     *          like from position 1 to position self::COMPETITORS_SAVE_LIMIT_MAX.
+     *          like from position 1 to position limit.
      *          This is optimization by db size.
      *
      * @param KeywordCompetitor[] $competitors
@@ -61,12 +61,10 @@ class KeywordCompetitorService
 
         foreach ($competitors as $competitor) {
             if ($competitor->getPosition() > self::COMPETITORS_SAVE_LIMIT_MAX) {
-                continue; // We add only few competitors from top.
+                break;
             }
-
             $this->em->persist($competitor);
         }
-
         $this->em->flush();
 
         return $competitors;

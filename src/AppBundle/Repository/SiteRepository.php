@@ -8,4 +8,5 @@ use Doctrine\ORM\EntityRepository;
 
 class SiteRepository extends EntityRepository
 {
+    const ALIAS = 'site';
 }
