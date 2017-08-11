@@ -1,4 +1,4 @@
-# SEO CRM for SEO specialists.
+# SEO CRM for SEO specialists and clients.
 
 **Please, no PR at this point. Until alpha.**
 
@@ -6,14 +6,15 @@
 What is this? (todo: write intro or video)
 
 This is an attempt to completely rewrite the [old project](http://www.rsite.ru/en/lastprojects/crm-robot-automation-seo-promotion-sites)
-with separate frontend and backend.<br>
-Prepare for highload.<br>
+with separated frontend and backend.<br>
+??Highload.<br>
 ??Support: horizontal sharding (ElasticSearch)<br>
 
-This is Backend part of the project.<br>
+This is backend part of the project.<br>
 See: Frontend part [no link yet]
 
-Project status: slow development, at free time.<br>
+## Project status
+Slow development, at free time.<br>
 Features implemented: 15%
 
 
@@ -25,8 +26,6 @@ Frontend:
   tests:
   * ...
 
-<br>
-
 Backend:
 * [Symfony 3](https://symfony.com)
 
@@ -34,8 +33,6 @@ Backend:
   * BDD [Behat](http://behat.org)
   * TDD [PhpSpec](http://www.phpspec.net)
   * [PhpUnit](https://phpunit.de)
-
-<br>
 
 Other:
 * Docker: Easy environment.
