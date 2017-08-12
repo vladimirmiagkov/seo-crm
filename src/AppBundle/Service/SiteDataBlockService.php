@@ -98,10 +98,10 @@ class SiteDataBlockService
                 if (!$pages = $query->getArrayResult()) {
                     break;
                 }
-                // HACK: If 'searchEngine' empty - add empty array(making it easier for frontend iteration)
+                // HACK: If 'searchEngines' empty - add empty array(making it easier for frontend iteration)
                 foreach ($pages as $pageKey => $page) {
-                    if (empty($pages['searchEngine'])) {
-                        $pages[$pageKey]['searchEngine'][0] = [];
+                    if (empty($pages['searchEngines'])) {
+                        $pages[$pageKey]['searchEngines'][0] = [];
                     }
                 }
 
@@ -119,17 +119,17 @@ class SiteDataBlockService
                     ->addSelect('p.id AS pid')// Add page id to keyword
                     ->innerJoin($alias . '.pages', 'p')
                     ->andWhere($qb->expr()->in('p.id', $pagesIds))
-                    //   Many to many join: SearchEngine
+                    //   Many to many join: SearchEngines
                     ->addSelect('se')// Add se
-                    ->leftJoin($alias . '.searchEngine', 'se', Join::WITH, $qb->expr()->eq('se.active', true));
+                    ->leftJoin($alias . '.searchEngines', 'se', Join::WITH, $qb->expr()->eq('se.active', true));
                 $keywordsQb = self::addFilterToQb($keywordsQb, $alias, $filter);//TODO: move to own module
                 $keywordsQuery = $keywordsQb->getQuery(); //$a = $keywordsQuery->getSQL();
                 $keywordsQuery->setHint(Query::HINT_INCLUDE_META_COLUMNS, true);
                 $keywords = $keywordsQuery->getArrayResult();
-                // HACK: If 'searchEngine' empty - add empty array(making it easier for frontend iteration)
+                // HACK: If 'searchEngines' empty - add empty array(making it easier for frontend iteration)
                 foreach ($keywords as $keywordKey => $keyword) {
-                    if (empty($keyword[0]['searchEngine'])) {
-                        $keywords[$keywordKey][0]['searchEngine'][0] = [];
+                    if (empty($keyword[0]['searchEngines'])) {
+                        $keywords[$keywordKey][0]['searchEngines'][0] = [];
                     }
                 }
 
@@ -189,8 +189,8 @@ class SiteDataBlockService
         $monitoredKeywordsIds = self::getMonitoredKeywordsIds($data);
         $keywordsPositions = $this->keywordPositionRepository->findRangeByKeywordsIds($monitoredKeywordsIds, $dateFrom, $dateTo);
         foreach ($data as &$item) {
-            if ($item[self::ENTITY_TYPE_IDENTIFIER] === Keyword::ENTITY_TYPE && isset($item['searchEngine'][0]['id'])) {
-                foreach ($item['searchEngine'] as &$searchEngine) {
+            if ($item[self::ENTITY_TYPE_IDENTIFIER] === Keyword::ENTITY_TYPE && isset($item['searchEngines'][0]['id'])) {
+                foreach ($item['searchEngines'] as &$searchEngine) {
                     // Add generatedRangeOfDates to searchEngine, even if NO keywordsPositions found!
                     $searchEngine['_cell'] = $generatedRangeOfDates;
 
@@ -251,7 +251,7 @@ class SiteDataBlockService
     {
         $result = null;
         foreach ($items as $item) {
-            if ($item[self::ENTITY_TYPE_IDENTIFIER] === Keyword::ENTITY_TYPE && !empty($item['searchEngine'])) {
+            if ($item[self::ENTITY_TYPE_IDENTIFIER] === Keyword::ENTITY_TYPE && !empty($item['searchEngines'])) {
                 $result[] = $item['id'];
             }
         }
