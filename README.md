@@ -1,8 +1,12 @@
-# SEO CRM for SEO specialists and clients.
+# SEO CRM (backend)
 
 **Please, no PR at this point. Until alpha.**
 
 ## About project
+SEO CRM for SEO specialists and clients.<br>
+This is backend part of the project.<br>
+See: [Frontend part](https://github.com/vladimirmiagkov/seo-crm-frontend)
+
 What is this? (todo: write intro or video)
 
 This is an attempt to completely rewrite the [old project](http://www.rsite.ru/en/lastprojects/crm-robot-automation-seo-promotion-sites)
@@ -10,13 +14,9 @@ with separated frontend and backend.<br>
 ??Highload.<br>
 ??Support: horizontal sharding (ElasticSearch)<br>
 
-This is backend part of the project.<br>
-See: Frontend part [no link yet]
-
 ## Project status
 Slow development, at free time.<br>
 Features implemented: 15%
-
 
 ## Built With (current stack)
 
@@ -24,7 +24,8 @@ Frontend:
 * [Angular 4](https://angular.io)
 
   tests:
-  * ...
+  * [Protractor](http://www.protractortest.org/)
+  * [Karma](https://karma-runner.github.io)
 
 Backend:
 * [Symfony 3](https://symfony.com)
