@@ -21,8 +21,8 @@ class RsAcl
 {
     const VIEW = 1;           // 1 << 0 // i can view object
     const CREATE = 2;         // 1 << 1 // i can add / add child object
-    const EDIT_OWN = 4;       // 1 << 2 // i can edit "own" object (creator = me)
-    const EDIT_OTHER = 8;     // 1 << 3 // i can edit "other" object (creator != me)
+    const EDIT = 4;           // 1 << 2 // i can edit object
+    //const EDIT_OTHER = 8;     // 1 << 3 // i can edit "other" object (creator != me)
     //const UNDELETE = 16;      // 1 << 4 //
     //const OPERATOR = 32;      // 1 << 5 //
     //const MASTER = 64;        // 1 << 6 //
@@ -171,7 +171,7 @@ class RsAcl
      * @param int    $mask      ACL Rights mask
      * @return array
      */
-    public function getIdsByClassName(string $className, User $user, int $mask = 0)
+    public function getIdsByClassName(string $className, User $user, int $mask)
     {
         $result = [];
 

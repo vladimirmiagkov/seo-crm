@@ -271,7 +271,7 @@ class FixtureLoader implements FixtureInterface, ContainerAwareInterface
 
             $sendToTemplate[] = 'isGranted: VIEW: 1=' . (int)$rsAcl->isGranted(RsAcl::VIEW, $site2, $user);
             $sendToTemplate[] = 'isGranted: CREATE: 1=' . (int)$rsAcl->isGranted(RsAcl::CREATE, $site2, $user);
-            $sendToTemplate[] = 'isGranted: EDIT_OWN: 0=' . (int)$rsAcl->isGranted(RsAcl::EDIT_OWN, $site2, $user);
+            $sendToTemplate[] = 'isGranted: EDIT: 0=' . (int)$rsAcl->isGranted(RsAcl::EDIT, $site2, $user);
         }
 
         $sendToTemplate[] = ' ';
