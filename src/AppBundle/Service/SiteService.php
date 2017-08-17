@@ -9,6 +9,7 @@ use AppBundle\Exception\SiteNotExistsException;
 use AppBundle\Repository\SiteRepository;
 use AppBundle\Security\Core\RsAcl;
 use Doctrine\ORM\EntityManager;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 
@@ -67,6 +68,9 @@ class SiteService
             // BUSINESS LOGIC: GRANT ACCESS FOR SUPER_ADMIN FOR ALL SITES.
         } else {
             $availableSitesIds = $this->acl->getIdsByClassName('AppBundle\Entity\Site', $user, RsAcl::VIEW);
+            if (empty($availableSitesIds)) { // No sites available for this user.
+                return null;
+            }
             $qb->andWhere(
                 $qb->expr()->in($alias . '.id', $availableSitesIds)
             );
@@ -83,8 +87,6 @@ class SiteService
     }
 
     /**
-     * // TODO
-     *
      * @param       $id
      * @param array $objData
      * @param User  $creator
@@ -94,7 +96,7 @@ class SiteService
     public function update($id, array $objData, User $creator): Site
     {
         if (empty($id)) {
-            throw new \InvalidArgumentException('Can not update SiteSchedule with empty id.');
+            throw new \InvalidArgumentException('Can not update Site with empty id.');
         }
 
         /** @var Site $obj */
@@ -103,17 +105,14 @@ class SiteService
             throw new SiteNotExistsException();
         }
 
-        // TODO: ACL
+        // ACL
+        if (!$this->acl->isGranted(RsAcl::EDIT, $obj, $creator)) {
+            throw new AccessDeniedException('Access denied.');
+        }
 
         isset($objData['active']) ? $obj->setActive($objData['active']) : null;
-
-        //isset($objData['intervalBetweenSiteDownload']) ? $obj->setIntervalBetweenSiteDownload($objData['intervalBetweenSiteDownload']) : null;
-        //isset($objData['intervalBetweenPageDownload']) ? $obj->setIntervalBetweenPageDownload($objData['intervalBetweenPageDownload']) : null;
-        //isset($objData['maxTimeLimitForSiteDownload']) ? $obj->setMaxTimeLimitForSiteDownload($objData['maxTimeLimitForSiteDownload']) : null;
-        //isset($objData['maxDepthLevelLimitForSiteDownload']) ? $obj->setMaxDepthLevelLimitForSiteDownload($objData['maxDepthLevelLimitForSiteDownload']) : null;
-        //isset($objData['useUserAgentFromRobotsTxt']) ? $obj->setUseUserAgentFromRobotsTxt($objData['useUserAgentFromRobotsTxt']) : null;
-        //isset($objData['followNoFollowLinks']) ? $obj->setFollowNoFollowLinks($objData['followNoFollowLinks']) : null;
-        //isset($objData['checkExternalLinksFor404']) ? $obj->setCheckExternalLinksFor404($objData['checkExternalLinksFor404']) : null;
+        isset($objData['name']) ? $obj->setName($objData['name']) : null;
+        isset($objData['seoStrategyKeywordPage']) ? $obj->setSeoStrategyKeywordPage($objData['seoStrategyKeywordPage']) : null;
 
         $obj->setModifiedBy($creator);
         $obj->setModifiedAtChange();
