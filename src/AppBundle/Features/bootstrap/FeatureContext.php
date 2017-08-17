@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 use AppBundle\Entity\Site;
 use AppBundle\Entity\SiteSchedule;
+use AppBundle\Entity\User;
+use AppBundle\Security\Core\RsAcl;
 use Behat\Behat\Tester\Exception\PendingException;
 use Behat\Behat\Context\Context;
 use Behat\Gherkin\Node\PyStringNode;
@@ -35,6 +37,8 @@ class FeatureContext implements Context
         $metadata = $this->em->getClassMetaData(Site::class);
         $metadata->setIdGenerator(new \Doctrine\ORM\Id\AssignedGenerator()); // For save our explicitly setted id.
 
+        $rsAcl = $this->kernel->getContainer()->get('AppBundle\Security\Core\RsAcl');
+
         foreach ($table as $row) {
             $obj = new Site();
             $obj
@@ -45,6 +49,19 @@ class FeatureContext implements Context
                 ->setDeleted((bool)$row['deleted']);
             $this->em->persist($obj);
             $this->em->flush();
+
+            // Set acl for site.
+            if (!empty($row['acl(user_id,bitmask)'])) {
+                $acl = explode(',', $row['acl(user_id,bitmask)']);
+                if ($acl[1] > 0) {
+                    /** @var User $user */
+                    $user = $this->em->getRepository(User::class)->find($acl[0]);
+                    if (!$user) {
+                        throw new \Exception('Can not find user with id=' . $acl[0]);
+                    }
+                    $rsAcl->setAcl((int)$acl[1], $obj, $user);
+                }
+            }
         }
     }
 
