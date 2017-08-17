@@ -67,11 +67,11 @@ class KeywordPositionService
      * We check one keyword in ALL linked (to this keyword) search engines.
      *
      * @param bool $debugUpdateKeywordPositionLastCheck
-     * @return array|null
+     * @return SerpResult[]|null
      */
     public function grabKeywordPositionFromSearchEngines($debugUpdateKeywordPositionLastCheck = true)
     {
-        $result = [];
+        $result = null;
 
         $keyword = $this->keywordRepository->findKeywordForPositionCheck();
         if (!$keyword) { // No keyword to check - exit.
