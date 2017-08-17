@@ -1,64 +1,73 @@
 <?php
+declare(strict_types=1);
 
+use AppBundle\Entity\Site;
+use AppBundle\Entity\SiteSchedule;
 use Behat\Behat\Tester\Exception\PendingException;
 use Behat\Behat\Context\Context;
 use Behat\Gherkin\Node\PyStringNode;
 use Behat\Gherkin\Node\TableNode;
+use Behat\Testwork\Tester\Result\TestResult;
+use Symfony\Component\HttpKernel\KernelInterface;
+use PHPUnit\Framework\Assert as Assertions;
 
-/**
- * Defines application features from the specific context.
- */
+require_once __DIR__ . '/../../../../vendor/phpunit/phpunit/src/Framework/Assert/Functions.php';
+
 class FeatureContext implements Context
 {
-    /**
-     * Initializes context.
-     *
-     * Every scenario gets its own context instance.
-     * You can also pass arbitrary arguments to the
-     * context constructor through behat.yml.
-     */
-    public function __construct()
+    /** @var KernelInterface */
+    private $kernel;
+    /** @var \Doctrine\ORM\EntityManager */
+    private $em;
+
+    public function __construct(KernelInterface $kernel)
     {
+        $this->kernel = $kernel;
+        $this->em = $this->kernel->getContainer()->get('doctrine')->getManager();
     }
 
-    ///**
-    // * @Given there is a :arg1, which costs £:arg2
-    // */
-    //public function thereIsAWhichCostsPs($arg1, $arg2)
-    //{
-    //    //throw new PendingException();
-    //    \PHPUnit_Framework_Assert::assertCount(1, [1]);
-    //}
-    //
-    ///**
-    // * @When I add the :arg1 to the basket
-    // */
-    //public function iAddTheToTheBasket($arg1)
-    //{
-    //    //throw new PendingException();
-    //}
-    //
-    ///**
-    // * @Then I should have :arg1 product in the basket
-    // */
-    //public function iShouldHaveProductInTheBasket($arg1)
-    //{
-    //    //throw new PendingException();
-    //}
-    //
-    ///**
-    // * @Then the overall basket price should be £:arg1
-    // */
-    //public function theOverallBasketPriceShouldBePs($arg1)
-    //{
-    //    //throw new PendingException();
-    //}
-    //
-    ///**
-    // * @Then I should have :arg1 products in the basket
-    // */
-    //public function iShouldHaveProductsInTheBasket($arg1)
-    //{
-    //    //throw new PendingException();
-    //}
+    /**
+     * @Given there are following sites
+     */
+    public function thereAreFollowingSites(TableNode $table)
+    {
+        /** @var \Doctrine\ORM\Mapping\ClassMetadata $metadata */
+        $metadata = $this->em->getClassMetaData(Site::class);
+        $metadata->setIdGenerator(new \Doctrine\ORM\Id\AssignedGenerator()); // For save our explicitly setted id.
+
+        foreach ($table as $row) {
+            $obj = new Site();
+            $obj
+                ->setId($row['id'])
+                ->setActive((bool)$row['active'])
+                ->setName($row['name'])
+                ->setSeoStrategyKeywordPage((int)$row['seo_strategy_keyword_page'])
+                ->setDeleted((bool)$row['deleted']);
+            $this->em->persist($obj);
+            $this->em->flush();
+        }
+    }
+
+    /**
+     * @Given there are following site schedules
+     */
+    public function thereAreFollowingSiteSchedules(TableNode $table)
+    {
+        /** @var \Doctrine\ORM\Mapping\ClassMetadata $metadata */
+        $metadata = $this->em->getClassMetaData(SiteSchedule::class);
+        $metadata->setIdGenerator(new \Doctrine\ORM\Id\AssignedGenerator()); // For save our explicitly setted id.
+
+        foreach ($table as $row) {
+            /** @var Site $site */
+            $site = $this->em->getRepository(Site::class)->find($row['site_id']);
+            $obj = new SiteSchedule();
+            $obj
+                ->setId($row['id'])
+                ->setActive((bool)$row['active'])
+                ->setSite($site)
+                ->setIntervalBetweenSiteDownload($row['interval_between_site_download']);
+            $this->em->persist($obj);
+            $this->em->flush();
+        }
+    }
 }
