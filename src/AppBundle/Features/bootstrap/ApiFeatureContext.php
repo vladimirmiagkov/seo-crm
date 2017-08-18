@@ -121,7 +121,7 @@ class ApiFeatureContext implements Context
         $this->em = $this->kernel->getContainer()->get('doctrine')->getManager();
 
         $config['base_uri'] = $parameters['base_uri'];
-        $config['timeout'] = 60.0;
+        $config['timeout'] = 6000.0;
         $this->client = new Client($config);
     }
 
