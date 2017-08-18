@@ -49,15 +49,15 @@ class SiteDataBlockService
     }
 
     /**
-     * Build keywords <-> pages tree, with all data.
-     * TODO: Move this method to repository?
+     * Building process: keywords <-> pages tree, with all additional data.
+     * TODO: refactor this mess
      *
-     * @param Site     $site     Goal site
-     * @param null|int $limit    Pager limit
-     * @param null|int $offset   Pager offset
-     * @param string   $dateFrom Limits for data (bigger)
-     * @param string   $dateTo   Limits for data (smaller)
-     * @param string   $filter   DataBlock filter
+     * @param Site        $site     Goal site
+     * @param null|string $limit    Pager limit
+     * @param null|string $offset   Pager offset
+     * @param null|string $dateFrom Limits for data (bigger)
+     * @param null|string $dateTo   Limits for data (smaller)
+     * @param null|string $filter   DataBlock filter
      * @return array|null
      * @throws \Exception
      */
@@ -65,8 +65,8 @@ class SiteDataBlockService
         Site $site,
         $limit = null,
         $offset = null,
-        string $dateFrom = '',
-        string $dateTo = '',
+        $dateFrom = null,
+        $dateTo = null,
         $filter = null
     )
     {
@@ -76,7 +76,7 @@ class SiteDataBlockService
 
         /** @var $dateFrom \DateTime */
         /** @var $dateTo \DateTime */
-        list($dateFrom, $dateTo) = self::evaluateDateRange($dateFrom, $dateTo);
+        list($dateFrom, $dateTo) = self::evaluateDateRange($dateFrom, $dateTo); // TODO: replace with some "dateRange" object
 
         $qb = $this->em->createQueryBuilder()
             ->setMaxResults($limit)
@@ -91,14 +91,14 @@ class SiteDataBlockService
                     ->andWhere($alias . '.deleted = false')
                     ->andWhere($alias . '.site = :site')
                     ->setParameter('site', $site->getId());
-                $qb = self::addFilterToQb($qb, $alias, $filter);//TODO: move to own module
+                $qb = self::addFilterToQb($qb, $alias, $filter); // TODO: move to own module
                 $query = $qb->getQuery(); //$a = $query->getSQL();
                 $query->setHint(Query::HINT_INCLUDE_META_COLUMNS, true);
-                $paginator = new Paginator($query, true); //$a = $query->getSQL();
+                $paginator = new Paginator($query, true);
                 if (!$pages = $query->getArrayResult()) {
                     break;
                 }
-                // HACK: If 'searchEngines' empty - add empty array(making it easier for frontend iteration)
+                // HACK: If 'searchEngines' empty - add empty array (making it easier for frontend iteration).
                 foreach ($pages as $pageKey => $page) {
                     if (empty($pages['searchEngines'])) {
                         $pages[$pageKey]['searchEngines'][0] = [];
@@ -122,18 +122,18 @@ class SiteDataBlockService
                     //   Many to many join: SearchEngines
                     ->addSelect('se')// Add se
                     ->leftJoin($alias . '.searchEngines', 'se', Join::WITH, $qb->expr()->eq('se.active', true));
-                $keywordsQb = self::addFilterToQb($keywordsQb, $alias, $filter);//TODO: move to own module
+                $keywordsQb = self::addFilterToQb($keywordsQb, $alias, $filter); // TODO: move to own module
                 $keywordsQuery = $keywordsQb->getQuery(); //$a = $keywordsQuery->getSQL();
                 $keywordsQuery->setHint(Query::HINT_INCLUDE_META_COLUMNS, true);
                 $keywords = $keywordsQuery->getArrayResult();
-                // HACK: If 'searchEngines' empty - add empty array(making it easier for frontend iteration)
+                // HACK: If 'searchEngines' empty - add empty array (making it easier for frontend iteration).
                 foreach ($keywords as $keywordKey => $keyword) {
                     if (empty($keyword[0]['searchEngines'])) {
                         $keywords[$keywordKey][0]['searchEngines'][0] = [];
                     }
                 }
 
-                // Merge keywords to pages, flat tree ----------------------------------------------
+                // Recompose keywords to pages, flat tree (making it easier for frontend iteration).
                 //    page1
                 //    keyword1
                 //    keyword2
@@ -161,7 +161,7 @@ class SiteDataBlockService
                 throw new \InvalidArgumentException('Unavailable site seo strategy.');
         }
 
-        // Generate dataBlock dates cells in table header
+        // Generate dataBlock dates cells in table header.
         $generatedRangeOfDates = self::generateRangeOfDates($dateFrom, $dateTo);
 
         if (null !== $result) {
@@ -177,7 +177,7 @@ class SiteDataBlockService
     }
 
     /**
-     * Add keywords positions to result array.
+     * Add keywords positions to data array.
      *
      * @param           $data
      * @param           $generatedRangeOfDates
@@ -244,6 +244,8 @@ class SiteDataBlockService
     }
 
     /**
+     * TOD: add info, what is this?
+     *
      * @param $items
      * @return array|null
      */
@@ -265,11 +267,11 @@ class SiteDataBlockService
      * Set default time range, if needed.
      * Also convert unix timestamp to datetime, if needed.
      *
-     * @param string $dateFrom (bigger)
-     * @param string $dateTo   (smaller)
+     * @param null|string $dateFrom (bigger)
+     * @param null|string $dateTo   (smaller)
      * @return array
      */
-    protected static function evaluateDateRange(string $dateFrom, string $dateTo)
+    protected static function evaluateDateRange($dateFrom, $dateTo)
     {
         if (empty($dateFrom)) {
             $dateFrom = (new \DateTime('now'));
@@ -326,16 +328,18 @@ class SiteDataBlockService
      */
     protected static function addFilterToQb(QueryBuilder $qb, string $entity, $filter)
     {
-        // Add filtering
-        if (!empty($filterBy = self::getFilterParam($entity . 'Name', 'values', $filter))) {
-            $qb->andWhere($qb->expr()->orX(
-                $qb->expr()->like($entity . '.name', ':' . $entity . 'name')
-            ));
-            $qb->setParameter($entity . 'name', '%' . $filterBy . '%');
-        }
-        // Add sorting
-        if (!empty($sortBy = self::getFilterParam($entity . 'Name', 'sortDirection', $filter))) {
-            $qb->addOrderBy($entity . '.' . 'name', $sortBy);
+        if (!empty($filter)) {
+            // Add filtering
+            if (!empty($filterBy = self::getFilterParam($entity . 'Name', 'values', $filter))) {
+                $qb->andWhere($qb->expr()->orX(
+                    $qb->expr()->like($entity . '.name', ':' . $entity . 'name')
+                ));
+                $qb->setParameter($entity . 'name', '%' . $filterBy . '%');
+            }
+            // Add sorting
+            if (!empty($sortBy = self::getFilterParam($entity . 'Name', 'sortDirection', $filter))) {
+                $qb->addOrderBy($entity . '.' . 'name', $sortBy);
+            }
         }
 
         return $qb;

@@ -26,13 +26,18 @@ class SiteDataBlockController extends Controller
             throw $this->createAccessDeniedException();
         }
 
+        $filter = $request->query->get('filter');
+        if (!empty($filter)) {
+            $filter = \json_decode(\urldecode($request->query->get('filter')), true);
+        }
+
         $data = ['result' => $siteDataBlockService->getDataBlock(
             $site,
             $request->query->get('limit'),
             $request->query->get('offset'),
             $request->query->get('datefrom'),
             $request->query->get('dateto'),
-            \json_decode(\urldecode($request->query->get('filter')), true)
+            $filter
         )];
         $result = \json_encode($data);
 
