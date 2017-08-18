@@ -193,7 +193,7 @@ class FixtureLoader implements FixtureInterface, ContainerAwareInterface
                 ->setSite($site1)
                 ->setCreatedBy($user1)
                 ->setModifiedBy($user1)
-                ->addPage($page1); // <===
+                ->addPage($page1);
             $em->persist($keyword2);
             $em->flush();
             $sendToTemplate[] = 'create $keyword2';

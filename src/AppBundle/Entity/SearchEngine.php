@@ -24,7 +24,13 @@ class SearchEngine
     use NameTrait;
     use ActiveTrait;
 
+    /**
+     * Hardcoded "type". Do we need this?
+     */
     const GOOGLE_TYPE = 0;
+    /**
+     * Hardcoded "type". Do we need this?
+     */
     const YANDEX_TYPE = 1;
 
     /**

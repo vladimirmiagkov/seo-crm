@@ -37,11 +37,15 @@ class Site
 
     /**
      * Our local seo strategy.
+     * It's all about how you promote your site. Seo business logic.
      * "keywords" linked to "pages", or "pages" linked to "keywords".
-     * It's all about how you promote your site.
-     * Seo business logic.
      */
     const SEO_STRATEGY_KEYWORDS_LINKED_TO_PAGES = 0;
+    /**
+     * Our local seo strategy.
+     * It's all about how you promote your site. Seo business logic.
+     * "keywords" linked to "pages", or "pages" linked to "keywords".
+     */
     const SEO_STRATEGY_PAGES_LINKED_TO_KEYWORD = 1;
 
     /**

@@ -25,6 +25,10 @@ class KeywordPosition
     use IdTrait;
     use CreatedAtTrait;
 
+    /**
+     * TODO: add some statuses: "not grabbed yet", "position not found", "good grabbed", "some error accured while
+     * grabbed"
+     */
     const NOT_FOUND = 0;
 
     /**
