@@ -1,6 +1,10 @@
 <?php
 declare(strict_types=1);
 
+use AppBundle\Entity\Keyword;
+use AppBundle\Entity\KeywordPosition;
+use AppBundle\Entity\Page;
+use AppBundle\Entity\SearchEngine;
 use AppBundle\Entity\Site;
 use AppBundle\Entity\SiteSchedule;
 use AppBundle\Entity\User;
@@ -29,13 +33,31 @@ class FeatureContext implements Context
     }
 
     /**
+     * @Given there are following search engines
+     */
+    public function thereAreFollowingSearchEngines(TableNode $table)
+    {
+        $this->setIdGeneratorToManualSet(SearchEngine::class);
+
+        foreach ($table as $row) {
+            $obj = new SearchEngine();
+            $obj
+                ->setId($row['id'])
+                ->setActive((bool)$row['active'])
+                ->setName($row['name'])
+                ->setShortName($row['shortName'])
+                ->setType((int)$row['type']);
+            $this->em->persist($obj);
+            $this->em->flush();
+        }
+    }
+
+    /**
      * @Given there are following sites
      */
     public function thereAreFollowingSites(TableNode $table)
     {
-        /** @var \Doctrine\ORM\Mapping\ClassMetadata $metadata */
-        $metadata = $this->em->getClassMetaData(Site::class);
-        $metadata->setIdGenerator(new \Doctrine\ORM\Id\AssignedGenerator()); // For save our explicitly setted id.
+        $this->setIdGeneratorToManualSet(Site::class);
 
         $rsAcl = $this->kernel->getContainer()->get('AppBundle\Security\Core\RsAcl');
 
@@ -66,13 +88,107 @@ class FeatureContext implements Context
     }
 
     /**
+     * @Given there are following pages
+     */
+    public function thereAreFollowingPages(TableNode $table)
+    {
+        $this->setIdGeneratorToManualSet(Page::class);
+
+        foreach ($table as $row) {
+            /** @var Site $site */
+            $site = $this->em->getRepository(Site::class)->find($row['site_id']);
+            $obj = new Page();
+            $obj
+                ->setId($row['id'])
+                ->setActive((bool)$row['active'])
+                ->setName($row['name'])
+                ->setSite($site);
+            $this->em->persist($obj);
+            $this->em->flush();
+        }
+    }
+
+    /**
+     * @Given there are following keywords
+     */
+    public function thereAreFollowingKeywords(TableNode $table)
+    {
+        $this->setIdGeneratorToManualSet(Keyword::class);
+
+        foreach ($table as $row) {
+            $obj = new Keyword();
+            $obj
+                ->setId($row['id'])
+                ->setActive((bool)$row['active'])
+                ->setName($row['name']);
+
+            if (!empty($row['site_id'])) {
+                /** @var Site $site */
+                $site = $this->em->getRepository(Site::class)->find($row['site_id']);
+                $obj->setSite($site);
+            }
+
+            if (!empty($row['pages_id'])) {
+                $pagesId = explode(',', $row['pages_id']);
+                foreach ($pagesId as $pageId) {
+                    /** @var Page $page */
+                    $page = $this->em->getRepository(Page::class)->find($pageId);
+                    $obj->addPage($page);
+                }
+            }
+
+            if (!empty($row['searchengines_id'])) {
+                $searchEnginesId = explode(',', $row['searchengines_id']);
+                foreach ($searchEnginesId as $searchEngineId) {
+                    /** @var SearchEngine $searchEngine */
+                    $searchEngine = $this->em->getRepository(SearchEngine::class)->find($searchEngineId);
+                    $obj->addSearchEngine($searchEngine);
+                }
+            }
+
+            $this->em->persist($obj);
+            $this->em->flush();
+        }
+    }
+
+    /**
+     * @Given there are following keywords positions
+     */
+    public function thereAreFollowingKeywordsPositions(TableNode $table)
+    {
+        $this->setIdGeneratorToManualSet(KeywordPosition::class);
+
+        foreach ($table as $row) {
+            $obj = new KeywordPosition();
+            $obj
+                ->setId($row['id'])
+                ->setPosition((int)$row['position'])
+                ->setUrl($row['url'])
+                ->setCreatedAt(new \DateTime($row['created']));
+
+            if (!empty($row['keyword_id'])) {
+                /** @var Keyword $keyword */
+                $keyword = $this->em->getRepository(Keyword::class)->find($row['keyword_id']);
+                $obj->setKeyword($keyword);
+            }
+
+            if (!empty($row['searchengine_id'])) {
+                /** @var SearchEngine $searchEngine */
+                $searchEngine = $this->em->getRepository(SearchEngine::class)->find($row['searchengine_id']);
+                $obj->setSearchEngine($searchEngine);
+            }
+
+            $this->em->persist($obj);
+            $this->em->flush();
+        }
+    }
+
+    /**
      * @Given there are following site schedules
      */
     public function thereAreFollowingSiteSchedules(TableNode $table)
     {
-        /** @var \Doctrine\ORM\Mapping\ClassMetadata $metadata */
-        $metadata = $this->em->getClassMetaData(SiteSchedule::class);
-        $metadata->setIdGenerator(new \Doctrine\ORM\Id\AssignedGenerator()); // For save our explicitly setted id.
+        $this->setIdGeneratorToManualSet(SiteSchedule::class);
 
         foreach ($table as $row) {
             /** @var Site $site */
@@ -86,5 +202,17 @@ class FeatureContext implements Context
             $this->em->persist($obj);
             $this->em->flush();
         }
+    }
+
+    /**
+     * It's for set and save our explicitly (manually) setted id.
+     *
+     * @param string $class
+     */
+    private function setIdGeneratorToManualSet(string $class)
+    {
+        /** @var \Doctrine\ORM\Mapping\ClassMetadata $metadata */
+        $metadata = $this->em->getClassMetaData($class);
+        $metadata->setIdGenerator(new \Doctrine\ORM\Id\AssignedGenerator());
     }
 }
