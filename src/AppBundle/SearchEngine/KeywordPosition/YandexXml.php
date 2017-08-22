@@ -100,7 +100,7 @@ class YandexXml
                 \sleep($searchEngine->getCheckKeywordPositionTimeoutBetweenRequests());
             }
 
-            // Download search engine url.
+            // Download data from search engine.
             list($request, $response) = $this->yandexXmlDownload->download(
                 $searchEngineRequestParameters,
                 $keyword->getName(),

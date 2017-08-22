@@ -5,6 +5,7 @@ namespace DownloaderBundle\Service;
 
 use GuzzleHttp\Psr7;
 use GuzzleHttp\Client as GuzzleHttpClient;
+use GuzzleHttp\Psr7\Response;
 
 /**
  * Just a wrapper for Guzzle, with custom config.
@@ -32,19 +33,12 @@ class HttpDownloaderService implements DownloaderInterface
      * @param string $url
      * @param string $method
      * @param array  $options
-     *
-     * @return array
+     * @return Response
      */
-    public function request(string $url, string $method = 'GET', array $options = []): array
+    public function request(string $url, string $method = 'GET', array $options = []): Response
     {
-        $response = $this->client->request($method, $url, $options);
-
-        // TODO: replace with some `response` object...
-        return [
-            'body'    => (string)$response->getContent(),
-            'status'  => (int)$response->getStatus(),
-            'headers' => (array)$response->getHeaders(),
-        ];
+        $guzzleHttpResponse = $this->client->request($method, $url, $options);
+        return $guzzleHttpResponse;
     }
 
     /**

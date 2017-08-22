@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace AppBundle\SearchEngine\KeywordPosition;
 
-use DownloaderBundle\Service\HttpDownloaderService;
+use DownloaderBundle\Service\DownloaderInterface;
 
 /**
  * Helper class for download Yandex xml data.
@@ -13,11 +13,11 @@ class YandexXmlDownload
     const SEARCH_ENGINE_REQUEST_URL = 'https://yandex.ru/search/xml?';
 
     /**
-     * @var HttpDownloaderService
+     * @var DownloaderInterface
      */
     private $downloader;
 
-    public function __construct(HttpDownloaderService $downloader)
+    public function __construct(DownloaderInterface $downloader)
     {
         $this->downloader = $downloader;
     }
@@ -57,6 +57,7 @@ class YandexXmlDownload
         //$response = \file_get_contents(\dirname(__FILE__) . '/../../../../spec/AppBundle/SearchEngine/KeywordPosition/good_search_engine_response.xml'); // DEBUG
         //$response = \file_get_contents($searchEngineRequestUri, true, $requestContext);
 
+        /** @var \GuzzleHttp\Psr7\Response $response */
         $response = $this->downloader->request($searchEngineRequestUri, 'POST', [
             'body'    => $requestContent,
             'headers' => [
@@ -65,6 +66,6 @@ class YandexXmlDownload
             ],
         ]);
 
-        return [(string)$requestContent, (string)$response];
+        return [(string)$requestContent, (string)$response->getBody()];
     }
 }

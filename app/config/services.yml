@@ -28,6 +28,8 @@ services:
     #Doctrine\ORM\EntityManager: '@doctrine.orm.default_entity_manager'
     #Doctrine\ORM\EntityManager: '@doctrine.orm.entity_manager'
 
+    DownloaderBundle\Service\DownloaderInterface: '@DownloaderBundle\Service\HttpDownloaderService'
+
     app.jwt_token_authenticator:
         class: AppBundle\Security\Guard\JWTTokenAuthenticator
         parent: lexik_jwt_authentication.security.guard.jwt_token_authenticator
