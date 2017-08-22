@@ -6,6 +6,7 @@ namespace AppBundle\Controller\Api;
 use AppBundle\Entity\Site;
 use AppBundle\Security\Core\RsAcl;
 use AppBundle\Service\SiteDataBlockService;
+use AppBundle\Utils\DateTimeRange;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
@@ -26,6 +27,14 @@ class SiteDataBlockController extends Controller
             throw $this->createAccessDeniedException();
         }
 
+        $dateTimeRange = (new DateTimeRange(
+            $request->query->get('datefrom'), // Higher: 150 3 377854
+            $request->query->get('dateto'),   // Lower:  150 0 699454
+            'now', 'now -1 month'
+        ))
+            ->makeRangeNegative()
+            ->expandRangeToFullDay();
+
         $filter = $request->query->get('filter');
         if (!empty($filter)) {
             $filter = \json_decode(\urldecode($request->query->get('filter')), true);
@@ -35,8 +44,7 @@ class SiteDataBlockController extends Controller
             $site,
             $request->query->get('limit'),
             $request->query->get('offset'),
-            $request->query->get('datefrom'),
-            $request->query->get('dateto'),
+            $dateTimeRange,
             $filter
         )];
         $result = \json_encode($data);

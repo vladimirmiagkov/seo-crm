@@ -20,9 +20,9 @@ class KeywordPositionRepository extends EntityRepository
      * WARNING: Optimization by speed and low memory consumption!
      *
      * @param array          $keywordsIds
-     * @param \DateTime|null $dateFrom
-     * @param \DateTime|null $dateTo
-     * @return null
+     * @param \DateTime|null $dateFrom "higher" like '2018-01-01'
+     * @param \DateTime|null $dateTo   "lower"  like '2017-01-01'
+     * @return null|array array = ['keyword_id']['search_engine_id']['keyword position fulldate'][] = $keywordPosition
      */
     public function findRangeByKeywordsIds(array $keywordsIds, \DateTime $dateFrom = null, \DateTime $dateTo = null)
     {

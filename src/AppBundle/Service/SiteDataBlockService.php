@@ -8,6 +8,7 @@ use AppBundle\Entity\User;
 use AppBundle\Entity\Page;
 use AppBundle\Entity\Keyword;
 use AppBundle\Repository\KeywordPositionRepository;
+use AppBundle\Utils\DateTimeRange;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
@@ -50,14 +51,14 @@ class SiteDataBlockService
 
     /**
      * Building process: keywords <-> pages tree, with all additional data.
+     * We build specific data structure, just because for good frontend iteration through it.
      * TODO: refactor this mess
      *
-     * @param Site        $site     Goal site
-     * @param null|string $limit    Pager limit
-     * @param null|string $offset   Pager offset
-     * @param null|string $dateFrom Limits for data (bigger)
-     * @param null|string $dateTo   Limits for data (smaller)
-     * @param null|string $filter   DataBlock filter
+     * @param Site          $site   Goal site
+     * @param null|string   $limit  Pager limit
+     * @param null|string   $offset Pager offset
+     * @param DateTimeRange $dateTimeRange
+     * @param null|string   $filter DataBlock filter
      * @return array|null
      * @throws \Exception
      */
@@ -65,18 +66,13 @@ class SiteDataBlockService
         Site $site,
         $limit = null,
         $offset = null,
-        $dateFrom = null,
-        $dateTo = null,
+        DateTimeRange $dateTimeRange,
         $filter = null
     )
     {
         $result = null;
         $paginator = null;
         $generatedRangeOfDates = null;
-
-        /** @var $dateFrom \DateTime */
-        /** @var $dateTo \DateTime */
-        list($dateFrom, $dateTo) = self::evaluateDateRange($dateFrom, $dateTo); // TODO: replace with some "dateRange" object
 
         $qb = $this->em->createQueryBuilder()
             ->setMaxResults($limit)
@@ -161,11 +157,11 @@ class SiteDataBlockService
                 throw new \InvalidArgumentException('Unavailable site seo strategy.');
         }
 
-        // Generate dataBlock dates cells in table header.
-        $generatedRangeOfDates = self::generateRangeOfDates($dateFrom, $dateTo);
+        // Generate dataBlock dates cells for frontend table header.
+        $generatedRangeOfDates = self::generateRangeOfDates($dateTimeRange);
 
         if (null !== $result) {
-            $this->addKeywordsPositions($result, $generatedRangeOfDates, $dateFrom, $dateTo);
+            $this->addKeywordsPositions($result, $generatedRangeOfDates, $dateTimeRange->getStart(), $dateTimeRange->getEnd());
         }
 
         return [
@@ -181,15 +177,18 @@ class SiteDataBlockService
      *
      * @param           $data
      * @param           $generatedRangeOfDates
-     * @param \DateTime $dateFrom (bigger)
-     * @param \DateTime $dateTo   (smaller)
+     * @param \DateTime $dateFrom "higher" like '2018-01-01'
+     * @param \DateTime $dateTo   "lower"  like '2017-01-01'
      */
     protected function addKeywordsPositions(&$data, $generatedRangeOfDates, \DateTime $dateFrom, \DateTime $dateTo)
     {
         $monitoredKeywordsIds = self::getMonitoredKeywordsIds($data);
         $keywordsPositions = $this->keywordPositionRepository->findRangeByKeywordsIds($monitoredKeywordsIds, $dateFrom, $dateTo);
         foreach ($data as &$item) {
-            if ($item[self::ENTITY_TYPE_IDENTIFIER] === Keyword::ENTITY_TYPE && isset($item['searchEngines'][0]['id'])) {
+            if (
+                $item[self::ENTITY_TYPE_IDENTIFIER] === Keyword::ENTITY_TYPE // It's a "keyword".
+                && isset($item['searchEngines'][0]['id'])                    // We have linked "SearchEngine" to this keyword.
+            ) {
                 foreach ($item['searchEngines'] as &$searchEngine) {
                     // Add generatedRangeOfDates to searchEngine, even if NO keywordsPositions found!
                     $searchEngine['_cell'] = $generatedRangeOfDates;
@@ -207,22 +206,24 @@ class SiteDataBlockService
     }
 
     /**
-     * Generate dataBlock dates cells in table header.
+     * Generate dataBlock dates cells for frontend table header.
      *
-     * @param \DateTime $dateFrom (bigger)
-     * @param \DateTime $dateTo   (smaller)
+     * @param DateTimeRange $dateTimeRange
      * @return array
      */
-    protected static function generateRangeOfDates(\DateTime $dateFrom, \DateTime $dateTo)
+    protected static function generateRangeOfDates(DateTimeRange $dateTimeRange)
     {
         $result = [];
+        $range = (clone($dateTimeRange))
+            ->makeRangePositive()
+            ->expandRangeToFullDay();
 
-        $rangeFrom = (clone $dateFrom)->modify('+1 day')->setTime(0, 0, 0);
-        $rangeTo = (clone $dateTo)->setTime(0, 0, 0);
+        $generatedSequence = $range->generateSequence('P1D');
+        // Make range "reversed": from "higher" to "lower". We need it for frontend table.
+        $generatedSequence = \array_reverse($generatedSequence);
 
-        $intervalDays = $rangeFrom->diff($rangeTo)->days;
-        for ($i = 1; $i <= $intervalDays; $i++) {
-            $date = (clone $rangeFrom)->modify('-' . $i . ' day');
+        /** @var \DateTime $date */
+        foreach ($generatedSequence as $date) {
             $result[] = [
                 'shortdate' => $date->format('d'),
                 'fulldate'  => $date->format('Y-m-d'),
@@ -244,7 +245,7 @@ class SiteDataBlockService
     }
 
     /**
-     * TOD: add info, what is this?
+     * TODO: add info, what is this?
      *
      * @param $items
      * @return array|null
@@ -261,37 +262,6 @@ class SiteDataBlockService
             $result = \array_unique($result);
         }
         return $result;
-    }
-
-    /**
-     * Set default time range, if needed.
-     * Also convert unix timestamp to datetime, if needed.
-     *
-     * @param null|string $dateFrom (bigger)
-     * @param null|string $dateTo   (smaller)
-     * @return array
-     */
-    protected static function evaluateDateRange($dateFrom, $dateTo)
-    {
-        if (empty($dateFrom)) {
-            $dateFrom = (new \DateTime('now'));
-        } elseif (is_numeric($dateFrom)) { // timestamp
-            $dateFrom = (new \DateTime())->setTimestamp((int)$dateFrom);
-        } else {
-            throw new \InvalidArgumentException('Unsupported datetime format.');
-        }
-        $dateFrom->setTime(23, 59, 59); // Expand time limit: start from today night
-
-        if (empty($dateTo)) {
-            $dateTo = (new \DateTime('now -1 month'));
-        } elseif (is_numeric($dateTo)) { // timestamp
-            $dateTo = (new \DateTime())->setTimestamp((int)$dateTo);
-        } else {
-            throw new \InvalidArgumentException('Unsupported datetime format.');
-        }
-        $dateTo->setTime(0, 0, 0);
-
-        return [$dateFrom, $dateTo];
     }
 
     /**
