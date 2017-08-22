@@ -30,15 +30,16 @@ class KeywordPositionLog
 
     /**
      * Linked KeywordPosition.
+     * KeywordPosition can be null: search engine error.
      *
      * @var KeywordPosition
      *
      * @ORM\OneToOne(targetEntity="KeywordPosition")
-     * @ORM\JoinColumn(referencedColumnName="id", nullable=false)
+     * @ORM\JoinColumn(referencedColumnName="id", nullable=true)
      * @Serialization\Groups({"list"})
      * //@Serialization\MaxDepth(1)
      */
-    protected $keywordPosition;
+    protected $keywordPosition = null;
 
     /**
      * One status for request + response + errors...
@@ -57,9 +58,9 @@ class KeywordPositionLog
 
 
     /**
-     * @return KeywordPosition
+     * @return null|KeywordPosition
      */
-    public function getKeywordPosition(): KeywordPosition
+    public function getKeywordPosition()
     {
         return $this->keywordPosition;
     }
