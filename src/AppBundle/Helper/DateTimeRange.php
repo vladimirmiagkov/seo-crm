@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace AppBundle\Utils;
+namespace AppBundle\Helper;
 
 /**
  * Support class for work with datetime range.

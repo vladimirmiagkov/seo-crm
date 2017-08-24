@@ -1,8 +1,8 @@
 <?php
 
-namespace spec\AppBundle\Utils;
+namespace spec\AppBundle\Helper;
 
-use AppBundle\Utils\DateTimeRange;
+use AppBundle\Helper\DateTimeRange;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
 

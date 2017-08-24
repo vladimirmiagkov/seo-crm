@@ -8,8 +8,8 @@ use AppBundle\Entity\User;
 use AppBundle\Entity\Page;
 use AppBundle\Entity\Keyword;
 use AppBundle\Repository\KeywordPositionRepository;
-use AppBundle\Utils\DateTimeRange;
-use AppBundle\Utils\Pager;
+use AppBundle\Helper\DateTimeRange;
+use AppBundle\Helper\Pager;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
@@ -66,7 +66,7 @@ class SiteDataBlockService
         Site $site,
         Pager $pager,
         DateTimeRange $dateTimeRange,
-        $filter = null
+        $filter = null // TODO: replace with some "filter" class
     )
     {
         $result = null;

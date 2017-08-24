@@ -1,10 +1,10 @@
 <?php
 declare(strict_types=1);
 
-namespace AppBundle\Utils;
+namespace AppBundle\Helper;
 
 /**
- *
+ * Simple pager.
  */
 class Pager
 {

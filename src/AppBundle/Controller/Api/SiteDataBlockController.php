@@ -6,8 +6,8 @@ namespace AppBundle\Controller\Api;
 use AppBundle\Entity\Site;
 use AppBundle\Security\Core\RsAcl;
 use AppBundle\Service\SiteDataBlockService;
-use AppBundle\Utils\DateTimeRange;
-use AppBundle\Utils\Pager;
+use AppBundle\Helper\DateTimeRange;
+use AppBundle\Helper\Pager;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
@@ -38,7 +38,7 @@ class SiteDataBlockController extends Controller
             ->makeRangeNegative()
             ->expandRangeToFullDay();
 
-        $filter = $request->query->get('filter');
+        $filter = $request->query->get('filter'); // TODO: replace with some "filter" class
         if (!empty($filter)) {
             $filter = \json_decode(\urldecode($request->query->get('filter')), true);
         }

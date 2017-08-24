@@ -1,8 +1,8 @@
 <?php
 
-namespace spec\AppBundle\Utils;
+namespace spec\AppBundle\Helper;
 
-use AppBundle\Utils\Pager;
+use AppBundle\Helper\Pager;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
 
