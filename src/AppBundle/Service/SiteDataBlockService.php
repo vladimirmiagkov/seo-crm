@@ -9,6 +9,7 @@ use AppBundle\Entity\Page;
 use AppBundle\Entity\Keyword;
 use AppBundle\Repository\KeywordPositionRepository;
 use AppBundle\Utils\DateTimeRange;
+use AppBundle\Utils\Pager;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
@@ -55,8 +56,7 @@ class SiteDataBlockService
      * TODO: refactor this mess
      *
      * @param Site          $site   Goal site
-     * @param null|string   $limit  Pager limit
-     * @param null|string   $offset Pager offset
+     * @param Pager         $pager
      * @param DateTimeRange $dateTimeRange
      * @param null|string   $filter DataBlock filter
      * @return array|null
@@ -64,8 +64,7 @@ class SiteDataBlockService
      */
     public function getDataBlock(
         Site $site,
-        $limit = null,
-        $offset = null,
+        Pager $pager,
         DateTimeRange $dateTimeRange,
         $filter = null
     )
@@ -75,8 +74,8 @@ class SiteDataBlockService
         $generatedRangeOfDates = null;
 
         $qb = $this->em->createQueryBuilder()
-            ->setMaxResults($limit)
-            ->setFirstResult($offset);
+            ->setMaxResults($pager->getLimit())
+            ->setFirstResult($pager->getOffset());
 
         switch ($site->getSeoStrategyKeywordPage()) {
             case Site::SEO_STRATEGY_KEYWORDS_LINKED_TO_PAGES:

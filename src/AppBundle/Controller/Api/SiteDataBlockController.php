@@ -7,6 +7,7 @@ use AppBundle\Entity\Site;
 use AppBundle\Security\Core\RsAcl;
 use AppBundle\Service\SiteDataBlockService;
 use AppBundle\Utils\DateTimeRange;
+use AppBundle\Utils\Pager;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
@@ -27,6 +28,8 @@ class SiteDataBlockController extends Controller
             throw $this->createAccessDeniedException();
         }
 
+        $pager = new Pager($request->query->get('limit'), $request->query->get('offset'), 10, 0);
+
         $dateTimeRange = (new DateTimeRange(
             $request->query->get('datefrom'), // Higher: 150 3 377854
             $request->query->get('dateto'),   // Lower:  150 0 699454
@@ -40,13 +43,7 @@ class SiteDataBlockController extends Controller
             $filter = \json_decode(\urldecode($request->query->get('filter')), true);
         }
 
-        $data = ['result' => $siteDataBlockService->getDataBlock(
-            $site,
-            $request->query->get('limit'),
-            $request->query->get('offset'),
-            $dateTimeRange,
-            $filter
-        )];
+        $data = ['result' => $siteDataBlockService->getDataBlock($site, $pager, $dateTimeRange, $filter)];
         $result = \json_encode($data);
 
         return new Response($result);
