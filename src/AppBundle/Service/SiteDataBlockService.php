@@ -7,6 +7,7 @@ use AppBundle\Entity\Site;
 use AppBundle\Entity\User;
 use AppBundle\Entity\Page;
 use AppBundle\Entity\Keyword;
+use AppBundle\Helper\Filter\SiteDataBlockFilter;
 use AppBundle\Repository\KeywordPositionRepository;
 use AppBundle\Helper\DateTimeRange;
 use AppBundle\Helper\Pager;
@@ -55,10 +56,10 @@ class SiteDataBlockService
      * We build specific data structure, just because for good frontend iteration through it.
      * TODO: refactor this mess
      *
-     * @param Site          $site   Goal site
-     * @param Pager         $pager
-     * @param DateTimeRange $dateTimeRange
-     * @param null|string   $filter DataBlock filter
+     * @param Site                $site   Goal site
+     * @param Pager               $pager
+     * @param DateTimeRange       $dateTimeRange
+     * @param SiteDataBlockFilter $filter DataBlock filter
      * @return array|null
      * @throws \Exception
      */
@@ -66,7 +67,7 @@ class SiteDataBlockService
         Site $site,
         Pager $pager,
         DateTimeRange $dateTimeRange,
-        $filter = null // TODO: replace with some "filter" class
+        SiteDataBlockFilter $filter
     )
     {
         $result = null;
@@ -80,14 +81,17 @@ class SiteDataBlockService
         switch ($site->getSeoStrategyKeywordPage()) {
             case Site::SEO_STRATEGY_KEYWORDS_LINKED_TO_PAGES:
                 // Get pages with pager ------------------------------------------------------------
-                $alias = 'page';
-                $qb->addSelect($alias)
-                    ->from('AppBundle\Entity\Page', $alias)
-                    ->andWhere($alias . '.deleted = false')
-                    ->andWhere($alias . '.site = :site')
-                    ->setParameter('site', $site->getId());
-                $qb = self::addFilterToQb($qb, $alias, $filter); // TODO: move to own module
-                $query = $qb->getQuery(); //$a = $query->getSQL();
+                $qb->addSelect('page')
+                    ->from('AppBundle\Entity\Page', 'page')
+                    ->andWhere('page' . '.deleted = false')
+                    ->andWhere('page' . '.site = :site')
+                    ->setParameter('site', $site->getId())
+                    // Many to many join: SearchEngines
+                    ->addSelect('searchEngine')
+                    ->leftJoin('page' . '.searchEngines', 'searchEngine', Join::WITH, $qb->expr()->eq('searchEngine.active', true));
+                $qb = $filter->applyFilterToQueryBuilder($qb, 'page');
+
+                $query = $qb->getQuery();
                 $query->setHint(Query::HINT_INCLUDE_META_COLUMNS, true);
                 $paginator = new Paginator($query, true);
                 if (!$pages = $query->getArrayResult()) {
@@ -105,20 +109,20 @@ class SiteDataBlockService
                 }
 
                 // Get linked keywords from many-to-many by pagesIds ------------------------------
-                $alias = 'keyword';
                 $keywordsQb = $this->em->createQueryBuilder()
-                    ->addSelect($alias)
-                    ->from('AppBundle\Entity\Keyword', $alias)
-                    ->andWhere($alias . '.deleted = false')
-                    //   Many to many join: keywords to pages
-                    ->addSelect('p.id AS pid')// Add page id to keyword
-                    ->innerJoin($alias . '.pages', 'p')
-                    ->andWhere($qb->expr()->in('p.id', $pagesIds))
-                    //   Many to many join: SearchEngines
-                    ->addSelect('se')// Add se
-                    ->leftJoin($alias . '.searchEngines', 'se', Join::WITH, $qb->expr()->eq('se.active', true));
-                $keywordsQb = self::addFilterToQb($keywordsQb, $alias, $filter); // TODO: move to own module
-                $keywordsQuery = $keywordsQb->getQuery(); //$a = $keywordsQuery->getSQL();
+                    ->addSelect('keyword')
+                    ->from('AppBundle\Entity\Keyword', 'keyword')
+                    ->andWhere('keyword' . '.deleted = false')
+                    // Many to many join: keywords to pages
+                    ->addSelect('page.id AS pid')
+                    ->innerJoin('keyword' . '.pages', 'page')
+                    ->andWhere($qb->expr()->in('page.id', $pagesIds))
+                    // Many to many join: SearchEngines
+                    ->addSelect('searchEngine')
+                    ->leftJoin('keyword' . '.searchEngines', 'searchEngine', Join::WITH, $qb->expr()->eq('searchEngine.active', true));
+                $keywordsQb = $filter->applyFilterToQueryBuilder($keywordsQb, 'keyword');
+
+                $keywordsQuery = $keywordsQb->getQuery();
                 $keywordsQuery->setHint(Query::HINT_INCLUDE_META_COLUMNS, true);
                 $keywords = $keywordsQuery->getArrayResult();
                 // HACK: If 'searchEngines' empty - add empty array (making it easier for frontend iteration).
@@ -263,54 +267,54 @@ class SiteDataBlockService
         return $result;
     }
 
-    /**
-     * TODO: move to own module
-     *
-     * @param $name
-     * @param $param
-     * @param $filter
-     * @return null|string
-     */
-    protected static function getFilterParam($name, $param, $filter)
-    {
-        $result = null;
-        $filterKey = \array_search($name, \array_column($filter['filters'], 'name'));
-        if (false !== $filterKey) {
-            $result = $filter['filters'][$filterKey][$param];
-            if ($param == 'sortDirection') {
-                $result = \strtoupper($result);
-                if (!empty($result)) {
-                    $result = $result == 'ASC' ? $result : 'DESC';
-                }
-            }
-        }
-        return $result;
-    }
-
-    /**
-     * TODO: move to own module
-     *
-     * @param QueryBuilder $qb
-     * @param string       $entity
-     * @param              $filter
-     * @return QueryBuilder
-     */
-    protected static function addFilterToQb(QueryBuilder $qb, string $entity, $filter)
-    {
-        if (!empty($filter)) {
-            // Add filtering
-            if (!empty($filterBy = self::getFilterParam($entity . 'Name', 'values', $filter))) {
-                $qb->andWhere($qb->expr()->orX(
-                    $qb->expr()->like($entity . '.name', ':' . $entity . 'name')
-                ));
-                $qb->setParameter($entity . 'name', '%' . $filterBy . '%');
-            }
-            // Add sorting
-            if (!empty($sortBy = self::getFilterParam($entity . 'Name', 'sortDirection', $filter))) {
-                $qb->addOrderBy($entity . '.' . 'name', $sortBy);
-            }
-        }
-
-        return $qb;
-    }
+    ///**
+    // * TODO: move to own module
+    // *
+    // * @param $name
+    // * @param $param
+    // * @param $filter
+    // * @return null|string
+    // */
+    //protected static function getFilterParam($name, $param, $filter)
+    //{
+    //    $result = null;
+    //    $filterKey = \array_search($name, \array_column($filter['filters'], 'name'));
+    //    if (false !== $filterKey) {
+    //        $result = $filter['filters'][$filterKey][$param];
+    //        if ($param == 'sortDirection') {
+    //            $result = \strtoupper($result);
+    //            if (!empty($result)) {
+    //                $result = $result == 'ASC' ? $result : 'DESC';
+    //            }
+    //        }
+    //    }
+    //    return $result;
+    //}
+    //
+    ///**
+    // * TODO: move to own module
+    // *
+    // * @param QueryBuilder $qb
+    // * @param string       $entity
+    // * @param              $filter
+    // * @return QueryBuilder
+    // */
+    //protected static function addFilterToQb(QueryBuilder $qb, string $entity, $filter)
+    //{
+    //    if (!empty($filter)) {
+    //        // Add filtering
+    //        if (!empty($filterBy = self::getFilterParam($entity . 'Name', 'values', $filter))) {
+    //            $qb->andWhere($qb->expr()->orX(
+    //                $qb->expr()->like($entity . '.name', ':' . $entity . 'name')
+    //            ));
+    //            $qb->setParameter($entity . 'name', '%' . $filterBy . '%');
+    //        }
+    //        // Add sorting
+    //        if (!empty($sortBy = self::getFilterParam($entity . 'Name', 'sortDirection', $filter))) {
+    //            $qb->addOrderBy($entity . '.' . 'name', $sortBy);
+    //        }
+    //    }
+    //
+    //    return $qb;
+    //}
 }

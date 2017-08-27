@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace AppBundle\Controller\Api;
 
 use AppBundle\Entity\Site;
+use AppBundle\Helper\Filter\SiteDataBlockFilter;
 use AppBundle\Security\Core\RsAcl;
 use AppBundle\Service\SiteDataBlockService;
 use AppBundle\Helper\DateTimeRange;
@@ -38,9 +39,9 @@ class SiteDataBlockController extends Controller
             ->makeRangeNegative()
             ->expandRangeToFullDay();
 
-        $filter = $request->query->get('filter'); // TODO: replace with some "filter" class
-        if (!empty($filter)) {
-            $filter = \json_decode(\urldecode($request->query->get('filter')), true);
+        $filter = new SiteDataBlockFilter();
+        if (!empty($request->query->get('filter'))) {
+            $filter->setFilterItemsFromArray(\json_decode(\urldecode($request->query->get('filter')), true));
         }
 
         $data = ['result' => $siteDataBlockService->getDataBlock($site, $pager, $dateTimeRange, $filter)];
