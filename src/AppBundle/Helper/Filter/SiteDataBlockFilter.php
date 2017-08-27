@@ -94,7 +94,7 @@ class SiteDataBlockFilter
         }
 
         // Apply filters.
-        foreach ($this->getFiltersToApplyForEntity($goalEntityName) as $filter) {
+        foreach ($this->getFiltersForRestrictionsByEntityName($goalEntityName) as $filter) {
             $entityCollumn = $filter->getEntity() . '.' . $filter->getName(); // Like: 'page.name'
             $placeholder = $filter->getEntity() . $filter->getName(); // Like: 'pagename'
 
@@ -131,21 +131,36 @@ class SiteDataBlockFilter
 
         }
 
-        // TODO: Apply sorting.
-        //if (!empty($sortBy = self::getFilterParam($entity . 'Name', 'sortDirection', $filter))) {
-        //    $qb->addOrderBy($entity . '.' . 'name', $sortBy);
-        //}
+        // Apply sorting.
+        foreach ($this->getFiltersForSortByEntityName($goalEntityName) as $filter) {
+            $entityCollumn = $filter->getEntity() . '.' . $filter->getName(); // Like: 'page.name'
+
+            switch ($filter->getType()) {
+                case FilterItem::ITEM_TYPE_MULTISELECT:
+                    switch ($filter->getName()) {
+                        case 'searchEngines':
+                            // External table.
+                            $qb->addOrderBy('searchEngine.name', $filter->getSortDirection());
+                            break;
+                        default:
+                            $qb->addOrderBy($entityCollumn, $filter->getSortDirection());
+                    }
+                    break;
+                default:
+                    $qb->addOrderBy($entityCollumn, $filter->getSortDirection());
+            }
+        }
 
         return $qb;
     }
 
     /**
-     * Get all filters available for apply by entity name.
+     * Get all "restriction" filters by entity name.
      *
      * @param string $goalEntityName
      * @return FilterItem[]
      */
-    protected function getFiltersToApplyForEntity(string $goalEntityName): array
+    protected function getFiltersForRestrictionsByEntityName(string $goalEntityName): array
     {
         $result = [];
         foreach ($this->filterItems as $filterKey => $filter) {
@@ -158,13 +173,39 @@ class SiteDataBlockFilter
             switch ($filter->getType()) {
                 case FilterItem::ITEM_TYPE_RANGE:
                     if (null === $filter->getValueMin() && null === $filter->getValueMax()) {
-                        continue;
+                        continue(2);
                     }
                     break;
                 default:
                     if (null === $filter->getValues()) {
-                        continue;
+                        continue(2);
                     }
+            }
+
+            $result[$filterKey] = $filter;
+        }
+
+        return $result;
+    }
+
+    /**
+     * Get all filters available for sort by entity name.
+     *
+     * @param string $goalEntityName
+     * @return FilterItem[]
+     */
+    protected function getFiltersForSortByEntityName(string $goalEntityName): array
+    {
+        $result = [];
+        foreach ($this->filterItems as $filterKey => $filter) {
+            // We need filters only for goal entity.
+            if ($filter->getEntity() !== $goalEntityName) {
+                continue;
+            }
+
+            // values not empty?
+            if (null === $filter->getSortDirection()) {
+                continue;
             }
 
             $result[$filterKey] = $filter;
