@@ -54,7 +54,6 @@ class SiteDataBlockService
     /**
      * Building process: keywords <-> pages tree, with all additional data.
      * We build specific data structure, just because for good frontend iteration through it.
-     * TODO: refactor this mess
      *
      * @param Site                $site   Goal site
      * @param Pager               $pager
@@ -72,7 +71,7 @@ class SiteDataBlockService
     {
         $result = null;
         $paginator = null;
-        $generatedRangeOfDates = null;
+        $generatedHeaderCells = null;
 
         $qb = $this->em->createQueryBuilder()
             ->setMaxResults($pager->getLimit())
@@ -86,7 +85,7 @@ class SiteDataBlockService
                     ->andWhere('page' . '.deleted = false')
                     ->andWhere('page' . '.site = :site')
                     ->setParameter('site', $site->getId())
-                    // Many to many join: SearchEngines
+                    // External table
                     ->addSelect('searchEngine')
                     ->leftJoin('page' . '.searchEngines', 'searchEngine', Join::WITH, $qb->expr()->eq('searchEngine.active', true));
                 $qb = $filter->applyFilterToQueryBuilder($qb, 'page');
@@ -104,7 +103,7 @@ class SiteDataBlockService
                     }
                 }
 
-                if (!$pagesIds = self::getAllIds($pages)) {
+                if (!$pagesIds = self::getAllIdsFromItem($pages)) {
                     break;
                 }
 
@@ -117,7 +116,7 @@ class SiteDataBlockService
                     ->addSelect('page.id AS pid')
                     ->innerJoin('keyword' . '.pages', 'page')
                     ->andWhere($qb->expr()->in('page.id', $pagesIds))
-                    // Many to many join: SearchEngines
+                    // External table
                     ->addSelect('searchEngine')
                     ->leftJoin('keyword' . '.searchEngines', 'searchEngine', Join::WITH, $qb->expr()->eq('searchEngine.active', true));
                 $keywordsQb = $filter->applyFilterToQueryBuilder($keywordsQb, 'keyword');
@@ -160,32 +159,31 @@ class SiteDataBlockService
                 throw new \InvalidArgumentException('Unavailable site seo strategy.');
         }
 
-        // Generate dataBlock dates cells for frontend table header.
-        $generatedRangeOfDates = self::generateRangeOfDates($dateTimeRange);
+        $generatedHeaderCells = self::generateHeaderCells($dateTimeRange);
 
         if (null !== $result) {
-            $this->addKeywordsPositions($result, $generatedRangeOfDates, $dateTimeRange->getStart(), $dateTimeRange->getEnd());
+            $this->addKeywordsPositionsToData($result, $generatedHeaderCells, $dateTimeRange->getStart(), $dateTimeRange->getEnd());
         }
 
         return [
             'totalRecords'               => count($paginator),
             'siteSeoStrategyKeywordPage' => $site->getSeoStrategyKeywordPage(),
             'result'                     => $result,
-            'header'                     => $generatedRangeOfDates,
+            'header'                     => $generatedHeaderCells,
         ];
     }
 
     /**
      * Add keywords positions to data array.
      *
-     * @param           $data
-     * @param           $generatedRangeOfDates
+     * @param array     $data
+     * @param array     $generatedHeaderCells
      * @param \DateTime $dateFrom "higher" like '2018-01-01'
      * @param \DateTime $dateTo   "lower"  like '2017-01-01'
      */
-    protected function addKeywordsPositions(&$data, $generatedRangeOfDates, \DateTime $dateFrom, \DateTime $dateTo)
+    protected function addKeywordsPositionsToData(&$data, $generatedHeaderCells, \DateTime $dateFrom, \DateTime $dateTo)
     {
-        $monitoredKeywordsIds = self::getMonitoredKeywordsIds($data);
+        $monitoredKeywordsIds = self::getMonitoredKeywordsIdsFromData($data);
         if (!$monitoredKeywordsIds) {
             return;
         }
@@ -196,8 +194,8 @@ class SiteDataBlockService
                 && isset($item['searchEngines'][0]['id'])                    // We have linked "SearchEngine" to this keyword.
             ) {
                 foreach ($item['searchEngines'] as &$searchEngine) {
-                    // Add generatedRangeOfDates to searchEngine, even if NO keywordsPositions found!
-                    $searchEngine['_cell'] = $generatedRangeOfDates;
+                    // Add generatedHeaderCells to searchEngine, even if NO keywordsPositions found!
+                    $searchEngine['_cell'] = $generatedHeaderCells;
 
                     // Add actual keyword position per day (if keyword position exists for target day)
                     foreach ($searchEngine['_cell'] as &$cell) { // cell - target date
@@ -217,7 +215,7 @@ class SiteDataBlockService
      * @param DateTimeRange $dateTimeRange
      * @return array
      */
-    protected static function generateRangeOfDates(DateTimeRange $dateTimeRange)
+    protected static function generateHeaderCells(DateTimeRange $dateTimeRange)
     {
         $result = [];
         $range = (clone($dateTimeRange))
@@ -243,7 +241,7 @@ class SiteDataBlockService
      * @param $item
      * @return array
      */
-    protected static function getAllIds($item)
+    protected static function getAllIdsFromItem($item)
     {
         return array_map(function ($item) {
             return $item['id'];
@@ -251,16 +249,19 @@ class SiteDataBlockService
     }
 
     /**
-     * TODO: add info, what is this?
+     * Get monitored keywords (keyword has linked searchEngines) ids from data array.
      *
-     * @param $items
+     * @param array $data
      * @return array|null
      */
-    protected static function getMonitoredKeywordsIds($items)
+    protected static function getMonitoredKeywordsIdsFromData($data)
     {
         $result = null;
-        foreach ($items as $item) {
-            if ($item[self::ENTITY_TYPE_IDENTIFIER] === Keyword::ENTITY_TYPE && !empty($item['searchEngines'])) {
+        foreach ($data as $item) {
+            if (
+                $item[self::ENTITY_TYPE_IDENTIFIER] === Keyword::ENTITY_TYPE // It's a "keyword".
+                && !empty($item['searchEngines'])                            // We have linked "SearchEngine" to this keyword.
+            ) {
                 $result[] = $item['id'];
             }
         }
@@ -269,55 +270,4 @@ class SiteDataBlockService
         }
         return $result;
     }
-
-    ///**
-    // * TODO: move to own module
-    // *
-    // * @param $name
-    // * @param $param
-    // * @param $filter
-    // * @return null|string
-    // */
-    //protected static function getFilterParam($name, $param, $filter)
-    //{
-    //    $result = null;
-    //    $filterKey = \array_search($name, \array_column($filter['filters'], 'name'));
-    //    if (false !== $filterKey) {
-    //        $result = $filter['filters'][$filterKey][$param];
-    //        if ($param == 'sortDirection') {
-    //            $result = \strtoupper($result);
-    //            if (!empty($result)) {
-    //                $result = $result == 'ASC' ? $result : 'DESC';
-    //            }
-    //        }
-    //    }
-    //    return $result;
-    //}
-    //
-    ///**
-    // * TODO: move to own module
-    // *
-    // * @param QueryBuilder $qb
-    // * @param string       $entity
-    // * @param              $filter
-    // * @return QueryBuilder
-    // */
-    //protected static function addFilterToQb(QueryBuilder $qb, string $entity, $filter)
-    //{
-    //    if (!empty($filter)) {
-    //        // Add filtering
-    //        if (!empty($filterBy = self::getFilterParam($entity . 'Name', 'values', $filter))) {
-    //            $qb->andWhere($qb->expr()->orX(
-    //                $qb->expr()->like($entity . '.name', ':' . $entity . 'name')
-    //            ));
-    //            $qb->setParameter($entity . 'name', '%' . $filterBy . '%');
-    //        }
-    //        // Add sorting
-    //        if (!empty($sortBy = self::getFilterParam($entity . 'Name', 'sortDirection', $filter))) {
-    //            $qb->addOrderBy($entity . '.' . 'name', $sortBy);
-    //        }
-    //    }
-    //
-    //    return $qb;
-    //}
 }
