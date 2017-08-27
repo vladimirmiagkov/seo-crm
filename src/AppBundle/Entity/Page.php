@@ -97,10 +97,21 @@ class Page
      */
     protected $keywords;
 
+    /**
+     * Available (processed) "search engines" for this "page".
+     *
+     * @var SearchEngine|ArrayCollection
+     *
+     * @ORM\ManyToMany(targetEntity="SearchEngine")
+     * @Serialization\Groups({"list"})
+     * @Serialization\MaxDepth(3)
+     */
+    protected $searchEngines;
 
     public function __construct()
     {
         $this->keywords = new ArrayCollection();
+        $this->searchEngines = new ArrayCollection();
     }
 
 
@@ -137,6 +148,24 @@ class Page
     public function addKeyword(Keyword $keyword)
     {
         $this->keywords[] = $keyword;
+        return $this;
+    }
+
+    /**
+     * @return SearchEngine|ArrayCollection
+     */
+    public function getSearchEngines()
+    {
+        return $this->searchEngines;
+    }
+
+    /**
+     * @param SearchEngine|ArrayCollection $searchEngine
+     * @return $this
+     */
+    public function addSearchEngine($searchEngine)
+    {
+        $this->searchEngines[] = $searchEngine;
         return $this;
     }
 }
