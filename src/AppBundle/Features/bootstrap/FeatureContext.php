@@ -95,14 +95,27 @@ class FeatureContext implements Context
         $this->setIdGeneratorToManualSet(Page::class);
 
         foreach ($table as $row) {
-            /** @var Site $site */
-            $site = $this->em->getRepository(Site::class)->find($row['site_id']);
             $obj = new Page();
             $obj
                 ->setId($row['id'])
                 ->setActive((bool)$row['active'])
-                ->setName($row['name'])
-                ->setSite($site);
+                ->setName($row['name']);
+
+            if (!empty($row['site_id'])) {
+                /** @var Site $site */
+                $site = $this->em->getRepository(Site::class)->find($row['site_id']);
+                $obj->setSite($site);
+            }
+
+            if (!empty($row['searchengines_id'])) {
+                $searchEnginesId = explode(',', $row['searchengines_id']);
+                foreach ($searchEnginesId as $searchEngineId) {
+                    /** @var SearchEngine $searchEngine */
+                    $searchEngine = $this->em->getRepository(SearchEngine::class)->find($searchEngineId);
+                    $obj->addSearchEngine($searchEngine);
+                }
+            }
+
             $this->em->persist($obj);
             $this->em->flush();
         }
@@ -121,6 +134,14 @@ class FeatureContext implements Context
                 ->setId($row['id'])
                 ->setActive((bool)$row['active'])
                 ->setName($row['name']);
+
+            if (!empty($row['from_place'])) {
+                $obj->setFromPlace($row['from_place']);
+            }
+
+            if (!empty($row['search_engine_request_limit'])) {
+                $obj->setSearchEngineRequestLimit((int)$row['search_engine_request_limit']);
+            }
 
             if (!empty($row['site_id'])) {
                 /** @var Site $site */
