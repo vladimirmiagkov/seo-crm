@@ -186,6 +186,9 @@ class SiteDataBlockService
     protected function addKeywordsPositions(&$data, $generatedRangeOfDates, \DateTime $dateFrom, \DateTime $dateTo)
     {
         $monitoredKeywordsIds = self::getMonitoredKeywordsIds($data);
+        if (!$monitoredKeywordsIds) {
+            return;
+        }
         $keywordsPositions = $this->keywordPositionRepository->findRangeByKeywordsIds($monitoredKeywordsIds, $dateFrom, $dateTo);
         foreach ($data as &$item) {
             if (
