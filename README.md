@@ -1,7 +1,5 @@
 # SEO CRM (backend)
 
-**Please, no PR at this point. Until alpha.**
-
 ## About project
 SEO CRM for SEO specialists and clients.<br>
 This is backend part of the project.<br>
@@ -45,7 +43,7 @@ Other:
 
 ## Contributing
 
-Please no pr until alpha.
+This project is an open source, community-driven project.
 
 ## Authors
 
