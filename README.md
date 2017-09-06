@@ -39,11 +39,13 @@ Other:
 * Redis: Fast cache. Cross-process synchronization manager.
 * PhantomJS: Remote Javascript browser. We download full copy of sites with Javascript support.
 
+## Install
 
+(todo: write installation process.)
 
 ## Contributing
 
-This project is an open source, community-driven project.
+This is an open source, community-driven project.
 
 ## Authors
 
