@@ -62,7 +62,8 @@ class SearchEngine
     protected $type;
 
     /**
-     * Check keyword position every Periodicity. Seconds.
+     * Check keyword position every Periodicity.
+     * Seconds.
      *
      * @var int
      *
@@ -71,8 +72,8 @@ class SearchEngine
      * @Assert\Range(
      *     min = 86400,
      *     max = 31536000,
-     *     minMessage = "Periodicity must be at min {{ limit }} sec",
-     *     maxMessage = "Periodicity must be at max {{ limit }} sec"
+     *     minMessage = "Periodicity must be at min {{ limit }} seconds",
+     *     maxMessage = "Periodicity must be at max {{ limit }} seconds"
      * )
      */
     protected $checkKeywordPositionPeriodicity = 86400;
@@ -88,8 +89,8 @@ class SearchEngine
      * @Assert\Range(
      *     min = 0,
      *     max = 60,
-     *     minMessage = "Timeout between requests must be at min {{ limit }} sec",
-     *     maxMessage = "Timeout between requests must be at max {{ limit }} sec"
+     *     minMessage = "Timeout between requests must be at min {{ limit }} seconds",
+     *     maxMessage = "Timeout between requests must be at max {{ limit }} seconds"
      * )
      */
     protected $checkKeywordPositionTimeoutBetweenRequests = 3;
@@ -104,8 +105,8 @@ class SearchEngine
      * @Assert\Range(
      *     min = 1,
      *     max = 1000,
-     *     minMessage = "Request sites per page must be at min {{ limit }} sec",
-     *     maxMessage = "Request sites per page must be at max {{ limit }} sec"
+     *     minMessage = "Request sites per page must be at min {{ limit }}",
+     *     maxMessage = "Request sites per page must be at max {{ limit }}"
      * )
      */
     protected $checkKeywordPositionRequestSitesPerPage = 100;
