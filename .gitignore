@@ -1,8 +1,14 @@
+.idea/
+.git/
+/docker-symfony/
+
 /app/config/parameters.yml
 /app/config/parameters_test.yml
 /app/config/infrastructure.yml
 /build/
 /phpunit.xml
+/.env
+
 /var/*
 !/var/cache
 /var/cache/*
@@ -16,6 +22,3 @@
 !var/SymfonyRequirements.php
 /vendor/
 /web/bundles/
-.idea/
-.git/
-/docker-symfony/
