@@ -2,12 +2,35 @@
 FROM php:7.1-fpm
 ARG TIMEZONE
 
-MAINTAINER Maxence POUTORD <maxence.poutord@gmail.com>
-
-RUN apt-get update && apt-get install -y \
-    openssl \
-    git \
-    unzip
+# Install PHP extensions and PECL modules.
+RUN buildDeps=" \
+        libbz2-dev \
+        libmemcached-dev \
+        libmysqlclient-dev \
+        libsasl2-dev \
+    " \
+    runtimeDeps=" \
+        curl \
+        git \
+        openssl \
+        unzip \
+        libfreetype6-dev \
+        libicu-dev \
+        libjpeg-dev \
+        libmcrypt-dev \
+        libmemcachedutil2 \
+        libpng12-dev \
+        libpq-dev \
+        libxml2-dev \
+    " \
+    && apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y $buildDeps $runtimeDeps \
+    && docker-php-ext-install bcmath bz2 curl calendar iconv intl mbstring mcrypt opcache pdo pdo_mysql pdo_pgsql pgsql soap zip \
+    && docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
+    && docker-php-ext-install gd \
+    && pecl install redis \
+    && docker-php-ext-enable redis.so \
+    && apt-get purge -y --auto-remove $buildDeps \
+    && rm -r /var/lib/apt/lists/*
 
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
@@ -17,9 +40,6 @@ RUN composer --version
 RUN ln -snf /usr/share/zoneinfo/${TIMEZONE} /etc/localtime && echo ${TIMEZONE} > /etc/timezone
 RUN printf '[PHP]\ndate.timezone = "%s"\n', ${TIMEZONE} > /usr/local/etc/php/conf.d/tzone.ini
 RUN "date"
-
-# Type docker-php-ext-install to see available extensions
-RUN docker-php-ext-install pdo pdo_mysql
 
 
 # install xdebug
