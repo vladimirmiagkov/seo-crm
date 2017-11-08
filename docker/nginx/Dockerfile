@@ -7,8 +7,10 @@ RUN apt-get update && apt-get install -y \
 
 ADD nginx.conf /etc/nginx/
 ADD backend.conf /etc/nginx/sites-available/
+ADD frontend.conf /etc/nginx/sites-available/
 
 RUN ln -s /etc/nginx/sites-available/backend.conf /etc/nginx/sites-enabled/backend
+RUN ln -s /etc/nginx/sites-available/frontend.conf /etc/nginx/sites-enabled/frontend
 RUN rm /etc/nginx/sites-enabled/default
 
 RUN echo "upstream php-upstream { server php:9000; }" > /etc/nginx/conf.d/upstream.conf

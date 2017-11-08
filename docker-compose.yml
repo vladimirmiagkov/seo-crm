@@ -32,6 +32,7 @@ services:
         volumes_from:
             - php
         volumes:
+            - ${FRONTEND_PATH}:/var/www/frontend
             - ./docker/logs/nginx/:/var/log/nginx
     redis:
         image: redis:alpine
