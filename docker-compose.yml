@@ -23,8 +23,8 @@ services:
             - redis
             - elasticsearch
         volumes:
-            - ${SYMFONY_APP_PATH}:/var/www/symfony
-            - ./docker/logs/symfony:/var/www/symfony/app/logs
+            - ${BACKEND_PATH}:/var/www/backend
+            - ./docker/logs/backend:/var/www/backend/app/logs
     nginx:
         build: ./docker/nginx
         ports:

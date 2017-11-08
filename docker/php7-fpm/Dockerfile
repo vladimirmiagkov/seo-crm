@@ -57,4 +57,4 @@ RUN "date"
 #RUN echo 'alias sf="php app/console"' >> ~/.bashrc
 RUN echo 'alias sf="php bin/console"' >> ~/.bashrc
 
-WORKDIR /var/www/symfony
+WORKDIR /var/www/backend
