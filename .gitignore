@@ -1,6 +1,8 @@
 .idea/
 .git/
 /docker-symfony/
+/docker/.data/
+/docker/logs/
 
 /app/config/parameters.yml
 /app/config/parameters_test.yml
