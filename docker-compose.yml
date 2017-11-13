@@ -29,6 +29,7 @@ services:
         build: ./docker/nginx
         ports:
             - 80:80
+            - 81:81
         volumes_from:
             - php
         volumes:
