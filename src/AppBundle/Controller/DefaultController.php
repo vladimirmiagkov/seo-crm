@@ -3,10 +3,8 @@ declare(strict_types=1);
 
 namespace AppBundle\Controller;
 
-use AppBundle\Entity\User;
-use AppBundle\Entity\Site;
-use AppBundle\Entity\Page;
-use AppBundle\Entity\Keyword;
+use AppBundle\Repository\UserRepository;
+use JMS\Serializer\SerializationContext;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
@@ -37,11 +35,16 @@ class DefaultController extends Controller
      * @Route("/init")
      * @Method("GET")
      */
-    public function initAction()
+    public function initAction(UserRepository $userRepository)
     {
         $sendToTemplate = [];
 
-        echo '123';
+        echo 'init... <br>';
+        $users = ['result' => $userRepository->findAll()];
+        $sendToTemplate[] = $this->get('jms_serializer')->serialize($users, 'json', SerializationContext::create()
+            ->setGroups(['list'])
+            ->setSerializeNull(true)
+            ->enableMaxDepthChecks());
 
         //return $this->render('default/index.html.twig', ['base_dir' => realpath($this->container->getParameter('kernel.root_dir') . '/..'),]);
         return $this->render('default/test.twig', ['rscontent' => implode("\n", $sendToTemplate)]);
