@@ -28,7 +28,9 @@ services:
     nginx:
         build: ./docker/nginx
         ports:
+            # Frontend port
             - 80:80
+            # Backend port
             - 81:81
         volumes_from:
             - php
