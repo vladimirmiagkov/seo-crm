@@ -35,30 +35,13 @@ class CronController extends Controller
             throw new \InvalidArgumentException('Bad secure key provided.');
         }
 
+        $debugOutput = [];
+
         // TODO: Make full log for cron jobs, for visualising problems...
         // TODO: Move cron jobs to some "TaskRunner"??
 
-        $debugOutput = [];
         $serps = $keywordPositionService->grabKeywordPositionFromSearchEngines(false);
         $keywordPositionService->saveSerpsToDb($serps);
-        //if ($resultFromSearchEngine['keyword']) {
-        //    $debugOutput[] = 'Check keyword:';
-        //    $debugOutput[] = '&nbsp;&nbsp;' . 'site name = ' . $resultFromSearchEngine['keyword']->getSite()->getName();
-        //    $debugOutput[] = '&nbsp;&nbsp;' . 'keyword name = ' . $resultFromSearchEngine['keyword']->getName();
-        //    foreach ($resultFromSearchEngine['searchEngine'] as $searchEngineName => $searchEngineValues) {
-        //        $debugOutput[] = '&nbsp;&nbsp;' . 'searchEngineName = ' . $searchEngineName;
-        //        if (!empty($searchEngineValues['error'])) {
-        //            $debugOutput[] = '&nbsp;&nbsp;&nbsp;&nbsp;' . 'error = ' . implode("<br>\r\n<br>\r\n", $searchEngineValues['error']);
-        //        }
-        //        if (null !== $searchEngineValues['keywordPosition']) {
-        //            $debugOutput[] = '&nbsp;&nbsp;&nbsp;&nbsp;' . 'keywordPosition = ' . $searchEngineValues['keywordPosition']->getPosition();
-        //        }
-        //        if (null !== $searchEngineValues['keywordLastCheckPosition']) {
-        //            $debugOutput[] = '&nbsp;&nbsp;&nbsp;&nbsp;' . 'keywordLastCheckPosition = ' . $searchEngineValues['keywordLastCheckPosition']->getPosition();
-        //        }
-        //    }
-        //    $debugOutput[] = '---------------------------------------------------------------';
-        //}
 
         // TODO: Check pages in search engines index.
 
@@ -71,23 +54,4 @@ class CronController extends Controller
 
         return new Response(implode("<br>\r\n", $debugOutput));
     }
-
-    ///**
-    // * Run local symfony command.
-    // *
-    // * @param array $parameters
-    // * @return string
-    // */
-    //protected function runCommand(array $parameters)
-    //{
-    //    $kernel = $this->get('kernel');
-    //    $application = new Application($kernel);
-    //    $application->setAutoExit(false);
-    //    $input = new ArrayInput($parameters);
-    //    $output = new BufferedOutput(); // You can use NullOutput() if you don't need the output
-    //    $application->run($input, new BufferedOutput());
-    //    $result = $output->fetch(); // Return the output, don't use if you used NullOutput()
-    //
-    //    return $result;
-    //}
 }
