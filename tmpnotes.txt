@@ -7,7 +7,11 @@ ALL: ---------------------------------------------------------------------------
 DOCTRINE: REcreate DB+schema for env: 'dev' and 'test':
 php bin/console doctrine:database:drop --force & php bin/console doctrine:database:create & php bin/console doctrine:schema:create & php bin/console doctrine:fixtures:load --no-interaction & php bin/console doctrine:database:drop --force --env=test & php bin/console doctrine:database:create --env=test & php bin/console doctrine:schema:create --env=test
 
-
+DOCTRINE MIGRATIONS:
+# automatically generate new migration  
+php bin/console doctrine:migrations:diff
+# load all migrations into db
+php bin/console doctrine:migrations:migrate
 
 
 TESTS: -----------------------------------------------------------------------------------------------------------------

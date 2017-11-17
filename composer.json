@@ -36,6 +36,7 @@
         "php": ">=7.0",
         "doctrine/doctrine-bundle": "^1.6",
         "doctrine/doctrine-cache-bundle": "^1.3",
+        "doctrine/doctrine-migrations-bundle": "^1.0",
         "doctrine/orm": "^2.5",
         "elasticsearch/elasticsearch": "~5.0",
         "fabpot/goutte": "^3.1",
