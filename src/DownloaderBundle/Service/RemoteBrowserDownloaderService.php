@@ -13,12 +13,12 @@ use DownloaderBundle\Exception\DriverNotInitializedException;
 class RemoteBrowserDownloaderService implements DownloaderInterface, RemoteBrowserDownloaderInterface
 {
     /**
-     * Timeout in ms: trying to connect to RemoteWebDriver host
+     * Timeout in ms: trying to connect to RemoteWebDriver host.
      */
     const CONNECT_TIMEOUT = null;
 
     /**
-     * Timeout in ms: trying to request from RemoteWebDriver host
+     * Timeout in ms: trying to request from RemoteWebDriver host.
      */
     const REQUEST_TIMEOUT = null;
 
@@ -79,8 +79,9 @@ class RemoteBrowserDownloaderService implements DownloaderInterface, RemoteBrows
      * WARNING: Heavy long operation: retrieve 100 links take about 20-30 seconds long.
      * TODO: do we really need this??
      *
-     * @return array
      * @see https://github.com/facebook/php-webdriver/wiki/Example-command-reference
+     *
+     * @return array
      */
     public function getPageLinks(): array
     {

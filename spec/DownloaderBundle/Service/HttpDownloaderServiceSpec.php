@@ -18,9 +18,9 @@ class HttpDownloaderServiceSpec extends ObjectBehavior
         $this->shouldHaveType(HttpDownloaderService::class);
     }
 
-    //function it_should_download_url()
+    //function it_should_request_url()
     //{
-    //    $downloadResult = $this->download('http://www.elecmet52.ru');
-    //    //$serpResult->getResponses()->shouldBe([\file_get_contents(self::GOOD_SEARCH_ENGINE_RESPONSE_XML)]);
+    //    $result = $this->request('http://www.site1.us');
+    //    
     //}
 }
