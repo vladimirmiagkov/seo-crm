@@ -40,8 +40,9 @@ class CronController extends Controller
         // TODO: Make full log for cron jobs, for visualising problems...
         // TODO: Move cron jobs to some "TaskRunner"??
 
+        // Get keyword positions from search engines.
         $serps = $keywordPositionService->grabKeywordPositionFromSearchEngines(false);
-        $keywordPositionService->saveSerpsToDb($serps);
+        $debugInfo = $keywordPositionService->saveSerpsToDb($serps);
 
         // TODO: Check pages in search engines index.
 
